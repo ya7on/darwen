@@ -1,9 +1,13 @@
 [package]
 name = "darwen"
 description = "A relational algebra library for Rust"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 license = "MIT"
+repository = "https://github.com/ya7on/darwen"
+categories = ["database", "database-implementations"]
+keywords = ["relational", "algebra", "database", "kodd", "date", "darwen"]
+authors = ["S. Suprun <hello@syoma.website>"]
 
 [lints.rust]
 unused = { level = "warn", priority = -1 }
