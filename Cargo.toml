@@ -6,7 +6,7 @@ edition = "2021"
 license = "MIT"
 repository = "https://github.com/ya7on/darwen"
 categories = ["database", "database-implementations"]
-keywords = ["relational", "algebra", "database", "kodd", "date", "darwen"]
+keywords = ["relational", "algebra", "database"]
 authors = ["S. Suprun <hello@syoma.website>"]
 
 [lints.rust]
