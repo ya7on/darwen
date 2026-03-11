@@ -90,6 +90,8 @@ assert_eq!(adults, expected);
 ## Implemented Operations
 
 ### RESTRICT/SELECTION (σ)
+[Example](examples/restrict.rs) - `cargo run --example restrict`
+
 `σ age > 20 (people)`
 
 `people`
@@ -106,6 +108,8 @@ Output
 | Bob | 24 |
 
 ### PROJECT (π)
+[Example](examples/project.rs) - `cargo run --example project`
+
 `π name (people)`
 
 `people`
@@ -123,6 +127,8 @@ Output
 | Bob |
 
 ### RENAME (ρ)
+[Example](examples/rename.rs) - `cargo run --example rename`
+
 `ρ person_name/name (people)`
 
 `people`
@@ -140,6 +146,8 @@ Output
 | Bob |
 
 ### UNION (⋃)
+[Example](examples/union.rs) - `cargo run --example union`
+
 `a ⋃ b`
 
 `a`
@@ -165,6 +173,8 @@ Output
 | baz |
 
 ### DIFFERENCE (−)
+[Example](examples/difference.rs) - `cargo run --example difference`
+
 `a − b`
 
 `a`
@@ -189,6 +199,8 @@ Output
 | baz |
 
 ### PRODUCT (×)
+[Example](examples/product.rs) - `cargo run --example product`
+
 `colors × sizes`
 
 `colors`
@@ -215,6 +227,8 @@ Output
 | blue | M |
 
 ### JOIN (⋈)
+[Example](examples/join.rs) - `cargo run --example join`
+
 `users ⋈ cities`
 
 `users`
@@ -238,6 +252,8 @@ Output
 | 1 | Ann | Rome |
 
 ### INTERSECT (∩)
+[Example](examples/intersect.rs) - `cargo run --example intersect`
+
 `a ∩ b`
 
 `a`
