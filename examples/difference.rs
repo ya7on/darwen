@@ -1,8 +1,6 @@
 //! Demonstrates how to subtract one relation from another with the `DIFFERENCE` operation.
 
-use darwen::prelude::{
-    HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder,
-};
+use darwen::prelude::{HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder};
 use darwen::{heading, tuple};
 
 fn all_numbers() -> Relation {

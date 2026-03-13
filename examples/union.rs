@@ -1,8 +1,6 @@
 //! Demonstrates how to combine compatible relations with the `UNION` operation.
 
-use darwen::prelude::{
-    HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder,
-};
+use darwen::prelude::{HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder};
 use darwen::{heading, tuple};
 
 fn station_a() -> Relation {

@@ -1,8 +1,6 @@
 //! Demonstrates how to keep only shared tuples with the `INTERSECT` operation.
 
-use darwen::prelude::{
-    HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder,
-};
+use darwen::prelude::{HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder};
 use darwen::{heading, tuple};
 
 fn side_a() -> Relation {
