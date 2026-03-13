@@ -20,7 +20,7 @@ use crate::{
 #[macro_export]
 macro_rules! tuple {
     ($($key:ident = $value:expr),* $(,)?) => {
-        TupleBuilder::new()
+        $crate::TupleBuilder::new()
             $(
                 .with_value(stringify!($key), $value)
             )*
@@ -120,12 +120,10 @@ impl TupleBuilder {
 /// # Example
 ///
 /// ```rust
-/// use darwen::prelude::{AttributeName, Scalar, TupleBuilder};
+/// use darwen::tuple;
+/// # use darwen::prelude::TupleBuilder;
 ///
-/// let tuple = TupleBuilder::new()
-///     .with_value(AttributeName::from("id"), Scalar::Integer(1))
-///     .with_value(AttributeName::from("name"), Scalar::String("Monica".into()))
-///     .build()?;
+/// let tuple = tuple!(id = 1, name = "Monica")?;
 ///
 /// assert_eq!(tuple.arity(), 2);
 /// # Ok::<(), darwen::prelude::Error>(())
@@ -141,12 +139,10 @@ impl Tuple {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, Scalar, TupleBuilder};
+    /// use darwen::tuple;
+    /// # use darwen::prelude::TupleBuilder;
     ///
-    /// let tuple = TupleBuilder::new()
-    ///     .with_value(AttributeName::from("id"), Scalar::Integer(1))
-    ///     .with_value(AttributeName::from("active"), Scalar::Boolean(true))
-    ///     .build()?;
+    /// let tuple = tuple!(id = 1, active = true)?;
     ///
     /// assert_eq!(tuple.arity(), 2);
     /// # Ok::<(), darwen::prelude::Error>(())
@@ -161,11 +157,10 @@ impl Tuple {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, Scalar, TupleBuilder};
+    /// use darwen::{tuple, prelude::{AttributeName, Scalar}};
+    /// # use darwen::prelude::TupleBuilder;
     ///
-    /// let tuple = TupleBuilder::new()
-    ///     .with_value(AttributeName::from("id"), Scalar::Integer(1))
-    ///     .build()?;
+    /// let tuple = tuple!(id = 1)?;
     ///
     /// assert_eq!(
     ///     tuple.get(&AttributeName::from("id")),
@@ -183,12 +178,10 @@ impl Tuple {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, Scalar, TupleBuilder};
+    /// use darwen::{tuple, prelude::AttributeName};
+    /// # use darwen::prelude::TupleBuilder;
     ///
-    /// let tuple = TupleBuilder::new()
-    ///     .with_value(AttributeName::from("name"), Scalar::String("Monica".into()))
-    ///     .with_value(AttributeName::from("id"), Scalar::Integer(1))
-    ///     .build()?;
+    /// let tuple = tuple!(name = "Monica", id = 1)?;
     ///
     /// let names = tuple.iter().map(|(name, _)| name.clone()).collect::<Vec<_>>();
     ///

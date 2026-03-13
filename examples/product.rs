@@ -1,6 +1,6 @@
 //! Demonstrates how to build combinations with the `PRODUCT` operation.
 
-use darwen::prelude::{HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder};
+use darwen::prelude::{Relation, RelationBuilder, ScalarType};
 use darwen::{heading, tuple};
 
 fn singers() -> Relation {

@@ -1,8 +1,6 @@
 //! Demonstrates how to rename attributes with the `RENAME` operation.
 
-use darwen::prelude::{
-    AttributeName, HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder,
-};
+use darwen::prelude::{AttributeName, Relation, RelationBuilder, ScalarType};
 use darwen::{heading, tuple};
 
 fn contacts() -> Relation {

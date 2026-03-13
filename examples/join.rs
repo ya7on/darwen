@@ -2,7 +2,7 @@
 
 use darwen::{
     heading,
-    prelude::{HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder},
+    prelude::{Relation, RelationBuilder, ScalarType},
     tuple,
 };
 

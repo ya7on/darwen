@@ -24,7 +24,7 @@ use crate::{
 #[macro_export]
 macro_rules! heading {
     ($($key:ident = $value:expr),* $(,)?) => {
-        HeadingBuilder::new()
+        $crate::HeadingBuilder::new()
             $(
                 .with_attribute(stringify!($key), $value)
             )*
@@ -121,12 +121,10 @@ impl HeadingBuilder {
 /// # Example
 ///
 /// ```rust
-/// use darwen::prelude::{AttributeName, HeadingBuilder, ScalarType};
+/// use darwen::{heading, prelude::{AttributeName, ScalarType}};
+/// # use darwen::prelude::HeadingBuilder;
 ///
-/// let heading = HeadingBuilder::new()
-///     .with_attribute(AttributeName::from("id"), ScalarType::Integer)
-///     .with_attribute(AttributeName::from("name"), ScalarType::String)
-///     .build()?;
+/// let heading = heading!(id = ScalarType::Integer, name = ScalarType::String)?;
 ///
 /// assert!(heading.contains(&AttributeName::from("name")));
 /// # Ok::<(), darwen::prelude::Error>(())
@@ -163,12 +161,10 @@ impl Heading {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, HeadingBuilder, ScalarType};
+    /// use darwen::{heading, prelude::ScalarType};
+    /// # use darwen::prelude::HeadingBuilder;
     ///
-    /// let heading = HeadingBuilder::new()
-    ///     .with_attribute(AttributeName::from("id"), ScalarType::Integer)
-    ///     .with_attribute(AttributeName::from("name"), ScalarType::String)
-    ///     .build()?;
+    /// let heading = heading!(id = ScalarType::Integer, name = ScalarType::String)?;
     ///
     /// assert_eq!(heading.degree(), 2);
     /// # Ok::<(), darwen::prelude::Error>(())
@@ -183,14 +179,11 @@ impl Heading {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, HeadingBuilder, Scalar, ScalarType, TupleBuilder};
+    /// use darwen::{heading, tuple, prelude::ScalarType};
+    /// # use darwen::prelude::{HeadingBuilder, TupleBuilder};
     ///
-    /// let heading = HeadingBuilder::new()
-    ///     .with_attribute(AttributeName::from("id"), ScalarType::Integer)
-    ///     .build()?;
-    /// let tuple = TupleBuilder::new()
-    ///     .with_value(AttributeName::from("id"), Scalar::Integer(1))
-    ///     .build()?;
+    /// let heading = heading!(id = ScalarType::Integer)?;
+    /// let tuple = tuple!(id = 1)?;
     ///
     /// assert!(heading.validate_tuple(&tuple));
     /// # Ok::<(), darwen::prelude::Error>(())
@@ -216,11 +209,10 @@ impl Heading {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, HeadingBuilder, ScalarType};
+    /// use darwen::{heading, prelude::{AttributeName, ScalarType}};
+    /// # use darwen::prelude::HeadingBuilder;
     ///
-    /// let heading = HeadingBuilder::new()
-    ///     .with_attribute(AttributeName::from("id"), ScalarType::Integer)
-    ///     .build()?;
+    /// let heading = heading!(id = ScalarType::Integer)?;
     ///
     /// assert_eq!(
     ///     heading.get(&AttributeName::from("id")),
@@ -238,11 +230,10 @@ impl Heading {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, HeadingBuilder, ScalarType};
+    /// use darwen::{heading, prelude::{AttributeName, ScalarType}};
+    /// # use darwen::prelude::HeadingBuilder;
     ///
-    /// let heading = HeadingBuilder::new()
-    ///     .with_attribute(AttributeName::from("id"), ScalarType::Integer)
-    ///     .build()?;
+    /// let heading = heading!(id = ScalarType::Integer)?;
     ///
     /// assert!(heading.contains(&AttributeName::from("id")));
     /// assert!(!heading.contains(&AttributeName::from("age")));
@@ -258,12 +249,10 @@ impl Heading {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, HeadingBuilder, ScalarType};
+    /// use darwen::{heading, prelude::{AttributeName, ScalarType}};
+    /// # use darwen::prelude::HeadingBuilder;
     ///
-    /// let heading = HeadingBuilder::new()
-    ///     .with_attribute(AttributeName::from("name"), ScalarType::String)
-    ///     .with_attribute(AttributeName::from("id"), ScalarType::Integer)
-    ///     .build()?;
+    /// let heading = heading!(name = ScalarType::String, id = ScalarType::Integer)?;
     ///
     /// let names = heading.iter().map(|(name, _)| name.clone()).collect::<Vec<_>>();
     ///
@@ -279,16 +268,11 @@ impl Heading {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, HeadingBuilder, ScalarType};
+    /// use darwen::{heading, prelude::{AttributeName, ScalarType}};
+    /// # use darwen::prelude::HeadingBuilder;
     ///
-    /// let lhs = HeadingBuilder::new()
-    ///     .with_attribute(AttributeName::from("id"), ScalarType::Integer)
-    ///     .with_attribute(AttributeName::from("name"), ScalarType::String)
-    ///     .build()?;
-    /// let rhs = HeadingBuilder::new()
-    ///     .with_attribute(AttributeName::from("id"), ScalarType::Integer)
-    ///     .with_attribute(AttributeName::from("age"), ScalarType::Integer)
-    ///     .build()?;
+    /// let lhs = heading!(id = ScalarType::Integer, name = ScalarType::String)?;
+    /// let rhs = heading!(id = ScalarType::Integer, age = ScalarType::Integer)?;
     ///
     /// assert_eq!(lhs.common(&rhs)?, vec![AttributeName::from("id")]);
     /// # Ok::<(), darwen::prelude::Error>(())

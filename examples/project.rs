@@ -1,8 +1,6 @@
 //! Demonstrates how to keep only selected attributes with the `PROJECT` operation.
 
-use darwen::prelude::{
-    AttributeName, HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder,
-};
+use darwen::prelude::{AttributeName, Relation, RelationBuilder, ScalarType};
 use darwen::{heading, tuple};
 
 fn hotline() -> Relation {

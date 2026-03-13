@@ -1,9 +1,6 @@
 //! Demonstrates how to filter a relation with the `RESTRICT` operation.
 
-use darwen::prelude::{
-    Expression, HeadingBuilder, Predicate, Relation, RelationBuilder, Scalar, ScalarType,
-    TupleBuilder,
-};
+use darwen::prelude::{Expression, Predicate, Relation, RelationBuilder, Scalar, ScalarType};
 use darwen::{heading, tuple};
 
 fn users() -> Relation {
