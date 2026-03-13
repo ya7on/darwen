@@ -15,12 +15,48 @@ fn users() -> Relation {
             .unwrap(),
         )
         .with_body(vec![
-            tuple!(name = "Monica", age = 18, city = "Sochi", home_city = "Sochi").unwrap(),
-            tuple!(name = "Erica", age = 19, city = "Tbilisi", home_city = "Paris").unwrap(),
-            tuple!(name = "Rita", age = 20, city = "Berlin", home_city = "Berlin").unwrap(),
-            tuple!(name = "Tina", age = 21, city = "Tbilisi", home_city = "Tbilisi").unwrap(),
-            tuple!(name = "Sandra", age = 22, city = "Paris", home_city = "Berlin").unwrap(),
-            tuple!(name = "Mary", age = 23, city = "Berlin", home_city = "Berlin").unwrap(),
+            tuple!(
+                name = "Monica",
+                age = 18,
+                city = "Sochi",
+                home_city = "Sochi"
+            )
+            .unwrap(),
+            tuple!(
+                name = "Erica",
+                age = 19,
+                city = "Tbilisi",
+                home_city = "Paris"
+            )
+            .unwrap(),
+            tuple!(
+                name = "Rita",
+                age = 20,
+                city = "Berlin",
+                home_city = "Berlin"
+            )
+            .unwrap(),
+            tuple!(
+                name = "Tina",
+                age = 21,
+                city = "Tbilisi",
+                home_city = "Tbilisi"
+            )
+            .unwrap(),
+            tuple!(
+                name = "Sandra",
+                age = 22,
+                city = "Paris",
+                home_city = "Berlin"
+            )
+            .unwrap(),
+            tuple!(
+                name = "Mary",
+                age = 23,
+                city = "Berlin",
+                home_city = "Berlin"
+            )
+            .unwrap(),
         ])
         .build()
         .unwrap()
