@@ -1,34 +1,16 @@
 //! Demonstrates how to keep only shared tuples with the `INTERSECT` operation.
 
-use darwen::prelude::{
-    AttributeName, HeadingBuilder, Relation, RelationBuilder, Scalar, ScalarType, TupleBuilder,
-};
+use darwen::prelude::{Relation, RelationBuilder, ScalarType};
+use darwen::{heading, tuple};
 
 fn side_a() -> Relation {
     RelationBuilder::new()
-        .with_heading(
-            HeadingBuilder::new()
-                .with_attribute(AttributeName::from("name"), ScalarType::String)
-                .build()
-                .unwrap(),
-        )
+        .with_heading(heading!(name = ScalarType::String).unwrap())
         .with_body(vec![
-            TupleBuilder::new()
-                .with_value(AttributeName::from("name"), Scalar::String("Monica".into()))
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("name"), Scalar::String("Erica".into()))
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("name"), Scalar::String("Rita".into()))
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("name"), Scalar::String("Tina".into()))
-                .build()
-                .unwrap(),
+            tuple!(name = "Monica").unwrap(),
+            tuple!(name = "Erica").unwrap(),
+            tuple!(name = "Rita").unwrap(),
+            tuple!(name = "Tina").unwrap(),
         ])
         .build()
         .unwrap()
@@ -36,32 +18,12 @@ fn side_a() -> Relation {
 
 fn side_b() -> Relation {
     RelationBuilder::new()
-        .with_heading(
-            HeadingBuilder::new()
-                .with_attribute(AttributeName::from("name"), ScalarType::String)
-                .build()
-                .unwrap(),
-        )
+        .with_heading(heading!(name = ScalarType::String).unwrap())
         .with_body(vec![
-            TupleBuilder::new()
-                .with_value(AttributeName::from("name"), Scalar::String("Rita".into()))
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("name"), Scalar::String("Sandra".into()))
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("name"), Scalar::String("Mary".into()))
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(
-                    AttributeName::from("name"),
-                    Scalar::String("Jessica".into()),
-                )
-                .build()
-                .unwrap(),
+            tuple!(name = "Rita").unwrap(),
+            tuple!(name = "Sandra").unwrap(),
+            tuple!(name = "Mary").unwrap(),
+            tuple!(name = "Jessica").unwrap(),
         ])
         .build()
         .unwrap()
