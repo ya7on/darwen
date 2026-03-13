@@ -1,39 +1,19 @@
 //! Demonstrates how to combine relations on shared attributes with the `JOIN` operation.
 
-use darwen::prelude::{
-    AttributeName, HeadingBuilder, Relation, RelationBuilder, Scalar, ScalarType, TupleBuilder,
+use darwen::{
+    heading,
+    prelude::{HeadingBuilder, Relation, RelationBuilder, ScalarType, TupleBuilder},
+    tuple,
 };
 
 fn castaways() -> Relation {
     RelationBuilder::new()
-        .with_heading(
-            HeadingBuilder::new()
-                .with_attribute(AttributeName::from("number"), ScalarType::Integer)
-                .with_attribute(AttributeName::from("name"), ScalarType::String)
-                .build()
-                .unwrap(),
-        )
+        .with_heading(heading!(number = ScalarType::Integer, name = ScalarType::String).unwrap())
         .with_body(vec![
-            TupleBuilder::new()
-                .with_value(AttributeName::from("number"), Scalar::Integer(4))
-                .with_value(AttributeName::from("name"), Scalar::String("Monica".into()))
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("number"), Scalar::Integer(8))
-                .with_value(AttributeName::from("name"), Scalar::String("Erica".into()))
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("number"), Scalar::Integer(15))
-                .with_value(AttributeName::from("name"), Scalar::String("Rita".into()))
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("number"), Scalar::Integer(16))
-                .with_value(AttributeName::from("name"), Scalar::String("Tina".into()))
-                .build()
-                .unwrap(),
+            tuple!(number = 4, name = "Monica").unwrap(),
+            tuple!(number = 8, name = "Erica").unwrap(),
+            tuple!(number = 15, name = "Rita").unwrap(),
+            tuple!(number = 16, name = "Tina").unwrap(),
         ])
         .build()
         .unwrap()
@@ -41,38 +21,11 @@ fn castaways() -> Relation {
 
 fn hatch() -> Relation {
     RelationBuilder::new()
-        .with_heading(
-            HeadingBuilder::new()
-                .with_attribute(AttributeName::from("number"), ScalarType::Integer)
-                .with_attribute(AttributeName::from("element"), ScalarType::String)
-                .build()
-                .unwrap(),
-        )
+        .with_heading(heading!(number = ScalarType::Integer, element = ScalarType::String).unwrap())
         .with_body(vec![
-            TupleBuilder::new()
-                .with_value(AttributeName::from("number"), Scalar::Integer(8))
-                .with_value(
-                    AttributeName::from("element"),
-                    Scalar::String("Oxygen".into()),
-                )
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("number"), Scalar::Integer(15))
-                .with_value(
-                    AttributeName::from("element"),
-                    Scalar::String("Phosphorus".into()),
-                )
-                .build()
-                .unwrap(),
-            TupleBuilder::new()
-                .with_value(AttributeName::from("number"), Scalar::Integer(23))
-                .with_value(
-                    AttributeName::from("element"),
-                    Scalar::String("Vanadium".into()),
-                )
-                .build()
-                .unwrap(),
+            tuple!(number = 8, element = "Oxygen").unwrap(),
+            tuple!(number = 15, element = "Phosphorus").unwrap(),
+            tuple!(number = 23, element = "Vanadium").unwrap(),
         ])
         .build()
         .unwrap()

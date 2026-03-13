@@ -64,6 +64,30 @@ impl Scalar {
     }
 }
 
+impl From<bool> for Scalar {
+    fn from(value: bool) -> Self {
+        Scalar::Boolean(value)
+    }
+}
+
+impl From<i64> for Scalar {
+    fn from(value: i64) -> Self {
+        Scalar::Integer(value)
+    }
+}
+
+impl From<String> for Scalar {
+    fn from(value: String) -> Self {
+        Scalar::String(value)
+    }
+}
+
+impl From<&str> for Scalar {
+    fn from(value: &str) -> Self {
+        Scalar::String(value.to_string())
+    }
+}
+
 impl Display for Scalar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

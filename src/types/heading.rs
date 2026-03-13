@@ -6,6 +6,32 @@ use crate::{
     types::{scalar::ScalarType, AttributeName},
 };
 
+/// Builds a [`Heading`] from `name = type` pairs.
+///
+/// # Example
+///
+/// ```rust
+/// use darwen::{
+///     heading,
+///     prelude::{HeadingBuilder, ScalarType},
+/// };
+///
+/// let heading = heading!(name = ScalarType::String, age = ScalarType::Integer)?;
+///
+/// assert_eq!(heading.degree(), 2);
+/// # Ok::<(), darwen::prelude::Error>(())
+/// ```
+#[macro_export]
+macro_rules! heading {
+    ($($key:ident = $value:expr),* $(,)?) => {
+        HeadingBuilder::new()
+            $(
+                .with_attribute(stringify!($key), $value)
+            )*
+            .build()
+    };
+}
+
 /// Builds a [`Heading`] attribute by attribute.
 ///
 /// # Example
@@ -58,8 +84,11 @@ impl HeadingBuilder {
     /// # Ok::<(), darwen::prelude::Error>(())
     /// ```
     #[must_use]
-    pub fn with_attribute(mut self, name: AttributeName, ty: ScalarType) -> Self {
-        self.attributes.push((name, ty));
+    pub fn with_attribute<A>(mut self, name: A, ty: ScalarType) -> Self
+    where
+        A: Into<AttributeName>,
+    {
+        self.attributes.push((name.into(), ty));
         self
     }
 

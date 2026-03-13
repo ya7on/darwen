@@ -7,47 +7,25 @@
 //! # Example
 //!
 //! ```rust
-//! use darwen::prelude::{
-//!     AttributeName, Expression, HeadingBuilder, Predicate, RelationBuilder, Scalar,
-//!     ScalarType, TupleBuilder,
+//! use darwen::{
+//!     heading,
+//!     tuple,
+//!     prelude::{
+//!         AttributeName, Expression, HeadingBuilder, Predicate, RelationBuilder, Scalar,
+//!         ScalarType, TupleBuilder,
+//!     },
 //! };
 //!
 //! let users = RelationBuilder::new()
-//!     .with_heading(
-//!         HeadingBuilder::new()
-//!             .with_attribute(AttributeName::from("name"), ScalarType::String)
-//!             .with_attribute(AttributeName::from("age"), ScalarType::Integer)
-//!             .build()?,
-//!     )
+//!     .with_heading(heading!(name = ScalarType::String, age = ScalarType::Integer)?)
 //!     .with_body(vec![
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Monica".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(18))
-//!             .build()?,
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Erica".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(19))
-//!             .build()?,
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Rita".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(20))
-//!             .build()?,
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Tina".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(21))
-//!             .build()?,
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Sandra".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(22))
-//!             .build()?,
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Mary".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(23))
-//!             .build()?,
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Jessica".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(18))
-//!             .build()?,
+//!         tuple!(name = "Monica", age = 18)?,
+//!         tuple!(name = "Erica", age = 19)?,
+//!         tuple!(name = "Rita", age = 20)?,
+//!         tuple!(name = "Tina", age = 21)?,
+//!         tuple!(name = "Sandra", age = 22)?,
+//!         tuple!(name = "Mary", age = 23)?,
+//!         tuple!(name = "Jessica", age = 18)?,
 //!     ])
 //!     .build()?;
 //!
@@ -57,25 +35,11 @@
 //! ))?;
 //!
 //! let expected = RelationBuilder::new()
-//!     .with_heading(
-//!         HeadingBuilder::new()
-//!             .with_attribute(AttributeName::from("name"), ScalarType::String)
-//!             .with_attribute(AttributeName::from("age"), ScalarType::Integer)
-//!             .build()?,
-//!     )
+//!     .with_heading(heading!(name = ScalarType::String, age = ScalarType::Integer)?)
 //!     .with_body(vec![
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Tina".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(21))
-//!             .build()?,
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Sandra".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(22))
-//!             .build()?,
-//!         TupleBuilder::new()
-//!             .with_value(AttributeName::from("name"), Scalar::String("Mary".into()))
-//!             .with_value(AttributeName::from("age"), Scalar::Integer(23))
-//!             .build()?,
+//!         tuple!(name = "Tina", age = 21)?,
+//!         tuple!(name = "Sandra", age = 22)?,
+//!         tuple!(name = "Mary", age = 23)?,
 //!     ])
 //!     .build()?;
 //!

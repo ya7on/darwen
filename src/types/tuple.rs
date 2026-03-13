@@ -5,6 +5,29 @@ use crate::{
     types::{scalar::Scalar, AttributeName},
 };
 
+/// Builds a [`Tuple`] from `name = value` pairs.
+///
+/// # Example
+///
+/// ```rust
+/// use darwen::{tuple, prelude::TupleBuilder};
+///
+/// let tuple = tuple!(id = 1, name = "Monica")?;
+///
+/// assert_eq!(tuple.arity(), 2);
+/// # Ok::<(), darwen::prelude::Error>(())
+/// ```
+#[macro_export]
+macro_rules! tuple {
+    ($($key:ident = $value:expr),* $(,)?) => {
+        TupleBuilder::new()
+            $(
+                .with_value(stringify!($key), $value)
+            )*
+            .build()
+    };
+}
+
 /// Builds a [`Tuple`] value by adding attributes one by one.
 ///
 /// # Example
@@ -59,8 +82,12 @@ impl TupleBuilder {
     /// # Ok::<(), darwen::prelude::Error>(())
     /// ```
     #[must_use]
-    pub fn with_value(mut self, attribute: AttributeName, value: Scalar) -> Self {
-        self.values.push((attribute, value));
+    pub fn with_value<A, S>(mut self, attribute: A, value: S) -> Self
+    where
+        A: Into<AttributeName>,
+        S: Into<Scalar>,
+    {
+        self.values.push((attribute.into(), value.into()));
         self
     }
 
