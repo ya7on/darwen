@@ -114,4 +114,25 @@ mod tests {
     fn test_scalar_variants_are_not_equal() {
         assert_ne!(Scalar::Boolean(true), Scalar::Integer(1));
     }
+
+    #[test]
+    fn test_from_i64_creates_integer_scalar() {
+        let scalar = Scalar::from(42_i64);
+
+        assert_eq!(scalar, Scalar::Integer(42));
+    }
+
+    #[test]
+    fn test_from_string_creates_string_scalar() {
+        let scalar = Scalar::from(String::from("Monica"));
+
+        assert_eq!(scalar, Scalar::String(String::from("Monica")));
+    }
+
+    #[test]
+    fn test_from_str_creates_string_scalar() {
+        let scalar = Scalar::from("Erica");
+
+        assert_eq!(scalar, Scalar::String(String::from("Erica")));
+    }
 }
