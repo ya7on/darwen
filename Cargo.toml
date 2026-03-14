@@ -26,3 +26,42 @@ cast_lossless = "allow"
 cast_possible_truncation = "allow"
 cast_possible_wrap = "allow"
 cast_sign_loss = "allow"
+
+[dev-dependencies]
+criterion = "0.8.2"
+
+[[bench]]
+name = "join"
+harness = false
+
+[[bench]]
+name = "restrict"
+harness = false
+
+[[bench]]
+name = "project"
+harness = false
+
+[[bench]]
+name = "rename"
+harness = false
+
+[[bench]]
+name = "union"
+harness = false
+
+[[bench]]
+name = "difference"
+harness = false
+
+[[bench]]
+name = "product"
+harness = false
+
+[[bench]]
+name = "intersect"
+harness = false
+
+[[bench]]
+name = "divide"
+harness = false
