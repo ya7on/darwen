@@ -38,4 +38,9 @@ pub enum Error {
     HeadingMismatch,
     /// A relation builder was finalized without a heading.
     HeadingMissing,
+    /// A rename mapping is structurally invalid.
+    InvalidRenameMapping {
+        /// The duplicated source attribute name in the rename mapping.
+        name: AttributeName,
+    },
 }

@@ -301,8 +301,8 @@ impl Predicate {
     ///
     /// Returns [`Error::AttributeNotFound`] if one of the predicate expressions
     /// references an attribute that does not exist in the tuple.
-    /// Returns [`Error::ScalarTypeMismatch`] if `Eq`, `Gt`, or `Lt` compares
-    /// operands of different scalar types.
+    /// Returns [`Error::ScalarTypeMismatch`] if `Eq` compares operands of
+    /// different scalar types.
     /// Returns [`Error::NonComparableTypes`] if `Gt` or `Lt` is used with
     /// non-integer operands.
     pub fn eval(&self, tuple: &Tuple) -> Result<bool, Error> {
@@ -335,14 +335,8 @@ impl Predicate {
             Predicate::Gt(lhs, rhs) => {
                 let lhs = lhs.eval(tuple)?;
                 let rhs = rhs.eval(tuple)?;
-                if !matches!(lhs, Scalar::Integer(_)) && !matches!(rhs, Scalar::Integer(_)) {
+                if !matches!(lhs, Scalar::Integer(_)) || !matches!(rhs, Scalar::Integer(_)) {
                     return Err(Error::NonComparableTypes {
-                        lhs: lhs.ty(),
-                        rhs: rhs.ty(),
-                    });
-                }
-                if lhs.ty() != rhs.ty() {
-                    return Err(Error::ScalarTypeMismatch {
                         lhs: lhs.ty(),
                         rhs: rhs.ty(),
                     });
@@ -352,14 +346,8 @@ impl Predicate {
             Predicate::Lt(lhs, rhs) => {
                 let lhs = lhs.eval(tuple)?;
                 let rhs = rhs.eval(tuple)?;
-                if !matches!(lhs, Scalar::Integer(_)) && !matches!(rhs, Scalar::Integer(_)) {
+                if !matches!(lhs, Scalar::Integer(_)) || !matches!(rhs, Scalar::Integer(_)) {
                     return Err(Error::NonComparableTypes {
-                        lhs: lhs.ty(),
-                        rhs: rhs.ty(),
-                    });
-                }
-                if lhs.ty() != rhs.ty() {
-                    return Err(Error::ScalarTypeMismatch {
                         lhs: lhs.ty(),
                         rhs: rhs.ty(),
                     });

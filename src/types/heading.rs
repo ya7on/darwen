@@ -197,7 +197,6 @@ impl Heading {
     /// attribute required by the heading.
     /// Returns [`Error::ScalarTypeMismatch`] if a tuple value has a different
     /// scalar type than the heading requires.
-    #[must_use]
     pub fn validate_tuple(&self, tuple: &Tuple) -> Result<(), Error> {
         if self.degree() != tuple.arity() {
             return Err(Error::InvalidWidth {

@@ -17,7 +17,7 @@ impl Heading {
                 return Err(Error::AttributeNotFound { name: old.clone() });
             }
             if rename_map.insert(old.clone(), new.clone()).is_some() {
-                return Err(Error::AttributeAlreadyExists { name: new.clone() });
+                return Err(Error::InvalidRenameMapping { name: old.clone() });
             }
         }
         for old in rename_map.keys() {
@@ -92,8 +92,10 @@ impl Relation {
     ///
     /// Returns [`Error::AttributeNotFound`] if the rename mapping references an
     /// unknown attribute.
-    /// Returns [`Error::AttributeAlreadyExists`] if the rename mapping repeats
-    /// the same source attribute or produces duplicate target names.
+    /// Returns [`Error::InvalidRenameMapping`] if the rename mapping repeats
+    /// the same source attribute.
+    /// Returns [`Error::AttributeAlreadyExists`] if the rename result would
+    /// produce duplicate target names.
     ///
     /// # Example
     ///
@@ -377,8 +379,8 @@ mod tests {
                 (AttributeName::from("a"), AttributeName::from("x")),
                 (AttributeName::from("a"), AttributeName::from("y")),
             ]),
-            Err(Error::AttributeAlreadyExists {
-                name: AttributeName::from("y")
+            Err(Error::InvalidRenameMapping {
+                name: AttributeName::from("a")
             })
         );
         Ok(())

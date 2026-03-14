@@ -23,8 +23,8 @@ impl Relation {
     ///
     /// Returns [`Error::AttributeNotFound`] if the predicate references an
     /// attribute that does not exist in the relation tuples.
-    /// Returns [`Error::ScalarTypeMismatch`] if the predicate compares values
-    /// of different scalar types.
+    /// Returns [`Error::ScalarTypeMismatch`] if the predicate uses `Eq` to
+    /// compare values of different scalar types.
     /// Returns [`Error::NonComparableTypes`] if the predicate uses `<` or `>`
     /// with non-integer operands.
     ///
