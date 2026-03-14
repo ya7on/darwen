@@ -73,12 +73,9 @@ impl From<Scalar> for Expression {
 /// # Example
 ///
 /// ```rust
-/// use darwen::prelude::{AttributeName, Expression, Predicate, Scalar};
+/// use darwen::prelude::{AttributeName, Predicate, Scalar};
 ///
-/// let predicate = Predicate::Gt(
-///     Expression::Attribute(AttributeName::from("age")),
-///     Expression::Const(Scalar::Integer(18)),
-/// );
+/// let predicate = Predicate::gt(AttributeName::from("age"), Scalar::Integer(18));
 ///
 /// assert!(matches!(predicate, Predicate::Gt(_, _)));
 /// ```
@@ -99,6 +96,80 @@ pub enum Predicate {
 }
 
 impl Predicate {
+    /// Creates a negated predicate.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use darwen::{tuple, prelude::{AttributeName, Predicate, Scalar}};
+    /// # use darwen::prelude::TupleBuilder;
+    ///
+    /// let tuple = tuple!(active = true)?;
+    /// let predicate = Predicate::not(Predicate::eq(
+    ///     AttributeName::from("active"),
+    ///     Scalar::Boolean(false),
+    /// ));
+    ///
+    /// assert!(predicate.eval(&tuple)?);
+    /// # Ok::<(), darwen::prelude::Error>(())
+    /// ```
+    pub fn not<P>(predicate: P) -> Self
+    where
+        P: Into<Predicate>,
+    {
+        Self::Not(Box::new(predicate.into()))
+    }
+
+    /// Creates a conjunction of two predicates.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use darwen::{tuple, prelude::{AttributeName, Predicate, Scalar}};
+    /// # use darwen::prelude::TupleBuilder;
+    ///
+    /// let tuple = tuple!(age = 21, active = true)?;
+    /// let predicate = Predicate::and(
+    ///     Predicate::gt(AttributeName::from("age"), Scalar::Integer(18)),
+    ///     Predicate::eq(AttributeName::from("active"), Scalar::Boolean(true)),
+    /// );
+    ///
+    /// assert!(predicate.eval(&tuple)?);
+    /// # Ok::<(), darwen::prelude::Error>(())
+    /// ```
+    pub fn and<L, R>(lhs: L, rhs: R) -> Self
+    where
+        L: Into<Predicate>,
+        R: Into<Predicate>,
+    {
+        Self::And(Box::new(lhs.into()), Box::new(rhs.into()))
+    }
+
+    /// Creates a disjunction of two predicates.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use darwen::{tuple, prelude::{AttributeName, Predicate, Scalar}};
+    /// # use darwen::prelude::TupleBuilder;
+    ///
+    /// let tuple = tuple!(city = "Berlin")?;
+    /// let predicate = Predicate::or(
+    ///     Predicate::eq(AttributeName::from("city"), Scalar::from("Berlin")),
+    ///     Predicate::eq(AttributeName::from("city"), Scalar::from("Paris")),
+    /// );
+    ///
+    /// assert!(predicate.eval(&tuple)?);
+    /// # Ok::<(), darwen::prelude::Error>(())
+    /// ```
+    pub fn or<L, R>(lhs: L, rhs: R) -> Self
+    where
+        L: Into<Predicate>,
+        R: Into<Predicate>,
+    {
+        Self::Or(Box::new(lhs.into()), Box::new(rhs.into()))
+    }
+
     /// Creates an equality predicate from two expressions.
     ///
     /// # Example
@@ -180,16 +251,13 @@ impl Predicate {
     /// # Example
     ///
     /// ```rust
-    /// use darwen::prelude::{AttributeName, Expression, Predicate, Scalar, TupleBuilder};
+    /// use darwen::prelude::{AttributeName, Predicate, Scalar, TupleBuilder};
     ///
     /// let tuple = TupleBuilder::new()
     ///     .with_value(AttributeName::from("age"), Scalar::Integer(21))
     ///     .build()?;
     ///
-    /// let predicate = Predicate::Gt(
-    ///     Expression::Attribute(AttributeName::from("age")),
-    ///     Expression::Const(Scalar::Integer(18)),
-    /// );
+    /// let predicate = Predicate::gt(AttributeName::from("age"), Scalar::Integer(18));
     ///
     /// assert!(predicate.eval(&tuple)?);
     /// # Ok::<(), darwen::prelude::Error>(())
@@ -274,15 +342,9 @@ mod tests {
     #[test]
     fn test_and() {
         let tuple = integer_tuple("foo", 42);
-        let predicate = Predicate::And(
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("foo")),
-                Expression::Const(Scalar::Integer(42)),
-            )),
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("foo")),
-                Expression::Const(Scalar::Integer(42)),
-            )),
+        let predicate = Predicate::and(
+            Predicate::eq(AttributeName::from("foo"), Scalar::Integer(42)),
+            Predicate::eq(AttributeName::from("foo"), Scalar::Integer(42)),
         );
         assert!(predicate.eval(&tuple).unwrap());
     }
@@ -303,10 +365,7 @@ mod tests {
     #[test]
     fn test_eq() {
         let tuple = integer_tuple("foo", 42);
-        let predicate = Predicate::Eq(
-            Expression::Attribute(AttributeName::from("foo")),
-            Expression::Const(Scalar::Integer(42)),
-        );
+        let predicate = Predicate::eq(AttributeName::from("foo"), Scalar::Integer(42));
         assert!(predicate.eval(&tuple).unwrap());
     }
 
@@ -326,10 +385,10 @@ mod tests {
     #[test]
     fn test_not() {
         let tuple = integer_tuple("foo", 42);
-        let predicate = Predicate::Not(Box::new(Predicate::Eq(
-            Expression::Attribute(AttributeName::from("foo")),
-            Expression::Const(Scalar::Integer(42)),
-        )));
+        let predicate = Predicate::not(Predicate::eq(
+            AttributeName::from("foo"),
+            Scalar::Integer(42),
+        ));
 
         assert!(!predicate.eval(&tuple).unwrap());
     }
@@ -350,15 +409,9 @@ mod tests {
     #[test]
     fn test_or() {
         let tuple = integer_tuple("foo", 42);
-        let predicate = Predicate::Or(
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("foo")),
-                Expression::Const(Scalar::Integer(0)),
-            )),
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("foo")),
-                Expression::Const(Scalar::Integer(42)),
-            )),
+        let predicate = Predicate::or(
+            Predicate::eq(AttributeName::from("foo"), Scalar::Integer(0)),
+            Predicate::eq(AttributeName::from("foo"), Scalar::Integer(42)),
         );
 
         assert!(predicate.eval(&tuple).unwrap());
@@ -388,15 +441,9 @@ mod tests {
     #[test]
     fn test_and_propagates_attribute_errors() {
         let tuple = integer_tuple("foo", 42);
-        let predicate = Predicate::And(
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("foo")),
-                Expression::Const(Scalar::Integer(42)),
-            )),
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("missing")),
-                Expression::Const(Scalar::Integer(42)),
-            )),
+        let predicate = Predicate::and(
+            Predicate::eq(AttributeName::from("foo"), Scalar::Integer(42)),
+            Predicate::eq(AttributeName::from("missing"), Scalar::Integer(42)),
         );
 
         assert_eq!(predicate.eval(&tuple), Err(Error::InvalidAttribute));
@@ -405,15 +452,9 @@ mod tests {
     #[test]
     fn test_and_does_not_hide_missing_attribute_when_lhs_is_false() {
         let tuple = integer_tuple("foo", 42);
-        let predicate = Predicate::And(
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("foo")),
-                Expression::Const(Scalar::Integer(0)),
-            )),
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("missing")),
-                Expression::Const(Scalar::Integer(42)),
-            )),
+        let predicate = Predicate::and(
+            Predicate::eq(AttributeName::from("foo"), Scalar::Integer(0)),
+            Predicate::eq(AttributeName::from("missing"), Scalar::Integer(42)),
         );
 
         assert_eq!(predicate.eval(&tuple), Err(Error::InvalidAttribute));
@@ -422,15 +463,9 @@ mod tests {
     #[test]
     fn test_or_propagates_attribute_errors() {
         let tuple = integer_tuple("foo", 42);
-        let predicate = Predicate::Or(
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("foo")),
-                Expression::Const(Scalar::Integer(42)),
-            )),
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("missing")),
-                Expression::Const(Scalar::Integer(42)),
-            )),
+        let predicate = Predicate::or(
+            Predicate::eq(AttributeName::from("foo"), Scalar::Integer(42)),
+            Predicate::eq(AttributeName::from("missing"), Scalar::Integer(42)),
         );
 
         assert_eq!(predicate.eval(&tuple), Err(Error::InvalidAttribute));
@@ -439,10 +474,7 @@ mod tests {
     #[test]
     fn test_gt() {
         let tuple = integer_tuple("age", 42);
-        let predicate = Predicate::Gt(
-            Expression::Attribute(AttributeName::from("age")),
-            Expression::Const(Scalar::Integer(20)),
-        );
+        let predicate = Predicate::gt(AttributeName::from("age"), Scalar::Integer(20));
 
         assert!(predicate.eval(&tuple).unwrap());
     }
@@ -450,10 +482,7 @@ mod tests {
     #[test]
     fn test_gt_rejects_heterogeneous_scalar_types() {
         let tuple = integer_tuple("age", 42);
-        let predicate = Predicate::Gt(
-            Expression::Attribute(AttributeName::from("age")),
-            Expression::Const(Scalar::String("20".into())),
-        );
+        let predicate = Predicate::gt(AttributeName::from("age"), Scalar::String("20".into()));
 
         assert!(
             predicate.eval(&tuple).is_err(),
@@ -464,10 +493,7 @@ mod tests {
     #[test]
     fn test_lt() {
         let tuple = integer_tuple("age", 18);
-        let predicate = Predicate::Lt(
-            Expression::Attribute(AttributeName::from("age")),
-            Expression::Const(Scalar::Integer(20)),
-        );
+        let predicate = Predicate::lt(AttributeName::from("age"), Scalar::Integer(20));
 
         assert!(predicate.eval(&tuple).unwrap());
     }
@@ -475,10 +501,7 @@ mod tests {
     #[test]
     fn test_eq_rejects_heterogeneous_scalar_types() {
         let tuple = integer_tuple("age", 42);
-        let predicate = Predicate::Eq(
-            Expression::Attribute(AttributeName::from("age")),
-            Expression::Const(Scalar::String("42".into())),
-        );
+        let predicate = Predicate::eq(AttributeName::from("age"), Scalar::String("42".into()));
 
         assert!(
             predicate.eval(&tuple).is_err(),
@@ -489,10 +512,7 @@ mod tests {
     #[test]
     fn test_lt_rejects_heterogeneous_scalar_types() {
         let tuple = integer_tuple("age", 42);
-        let predicate = Predicate::Lt(
-            Expression::Attribute(AttributeName::from("age")),
-            Expression::Const(Scalar::String("20".into())),
-        );
+        let predicate = Predicate::lt(AttributeName::from("age"), Scalar::String("20".into()));
 
         assert!(
             predicate.eval(&tuple).is_err(),

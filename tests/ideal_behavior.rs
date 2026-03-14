@@ -1,8 +1,8 @@
 //! Additional tests for public API behaviors that were not covered elsewhere.
 
 use darwen::prelude::{
-    AttributeName, Error, Expression, Heading, HeadingBuilder, Predicate, Relation,
-    RelationBuilder, Scalar, ScalarType, Tuple, TupleBuilder,
+    AttributeName, Error, Heading, HeadingBuilder, Predicate, Relation, RelationBuilder, Scalar,
+    ScalarType, Tuple, TupleBuilder,
 };
 
 fn heading(attributes: Vec<(&str, ScalarType)>) -> Heading {
@@ -221,15 +221,9 @@ fn test_restrict_supports_composite_predicates() {
     );
 
     let adults = users
-        .restrict(&Predicate::And(
-            Box::new(Predicate::Gt(
-                Expression::Attribute(AttributeName::from("age")),
-                Expression::Const(Scalar::Integer(18)),
-            )),
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("active")),
-                Expression::Const(Scalar::Boolean(true)),
-            )),
+        .restrict(&Predicate::and(
+            Predicate::gt(AttributeName::from("age"), Scalar::Integer(18)),
+            Predicate::eq(AttributeName::from("active"), Scalar::Boolean(true)),
         ))
         .unwrap();
 

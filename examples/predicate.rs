@@ -1,6 +1,6 @@
 //! Demonstrates simple and composite predicates with the `RESTRICT` operation.
 
-use darwen::prelude::{Expression, Predicate, Relation, RelationBuilder, Scalar, ScalarType};
+use darwen::prelude::{Predicate, Relation, RelationBuilder, Scalar, ScalarType};
 use darwen::{heading, tuple, AttributeName};
 
 fn users() -> Relation {
@@ -76,75 +76,54 @@ fn main() {
     show(
         "Predicate::eq(city, \"Berlin\")",
         &users,
-        Predicate::Eq(
-            Expression::Attribute(AttributeName::from("city")),
-            Expression::Const(Scalar::from("Berlin")),
-        ),
+        Predicate::eq(AttributeName::from("city"), Scalar::from("Berlin")),
     );
 
     show(
         "Predicate::eq(city, home_city)",
         &users,
-        Predicate::Eq(
-            Expression::Attribute(AttributeName::from("city")),
-            Expression::Attribute(AttributeName::from("home_city")),
+        Predicate::eq(
+            AttributeName::from("city"),
+            AttributeName::from("home_city"),
         ),
     );
 
     show(
         "Predicate::gt(age, 20)",
         &users,
-        Predicate::Gt(
-            Expression::Attribute(AttributeName::from("age")),
-            Expression::Const(Scalar::from(20_i64)),
-        ),
+        Predicate::gt(AttributeName::from("age"), Scalar::from(20_i64)),
     );
 
     show(
         "Predicate::lt(age, 21)",
         &users,
-        Predicate::Lt(
-            Expression::Attribute(AttributeName::from("age")),
-            Expression::Const(Scalar::from(21_i64)),
+        Predicate::lt(AttributeName::from("age"), Scalar::from(21_i64)),
+    );
+
+    show(
+        "Predicate::and(gt(age, 20), eq(city, \"Berlin\"))",
+        &users,
+        Predicate::and(
+            Predicate::gt(AttributeName::from("age"), Scalar::from(20_i64)),
+            Predicate::eq(AttributeName::from("city"), Scalar::from("Berlin")),
         ),
     );
 
     show(
-        "Predicate::And(gt(age, 20), eq(city, \"Berlin\"))",
+        "Predicate::or(eq(city, \"Berlin\"), eq(city, \"Paris\"))",
         &users,
-        Predicate::And(
-            Box::new(Predicate::Gt(
-                Expression::Attribute(AttributeName::from("age")),
-                Expression::Const(Scalar::from(20_i64)),
-            )),
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("city")),
-                Expression::Const(Scalar::from("Berlin")),
-            )),
+        Predicate::or(
+            Predicate::eq(AttributeName::from("city"), Scalar::from("Berlin")),
+            Predicate::eq(AttributeName::from("city"), Scalar::from("Paris")),
         ),
     );
 
     show(
-        "Predicate::Or(eq(city, \"Berlin\"), eq(city, \"Paris\"))",
+        "Predicate::not(eq(city, \"Tbilisi\"))",
         &users,
-        Predicate::Or(
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("city")),
-                Expression::Const(Scalar::from("Berlin")),
-            )),
-            Box::new(Predicate::Eq(
-                Expression::Attribute(AttributeName::from("city")),
-                Expression::Const(Scalar::from("Paris")),
-            )),
-        ),
-    );
-
-    show(
-        "Predicate::Not(eq(city, \"Tbilisi\"))",
-        &users,
-        Predicate::Not(Box::new(Predicate::Eq(
-            Expression::Attribute(AttributeName::from("city")),
-            Expression::Const(Scalar::from("Tbilisi")),
-        ))),
+        Predicate::not(Predicate::eq(
+            AttributeName::from("city"),
+            Scalar::from("Tbilisi"),
+        )),
     );
 }
