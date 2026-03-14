@@ -84,19 +84,36 @@ pub enum Predicate {
     /// Logical negation of a predicate.
     Not(Box<Predicate>),
     /// Logical conjunction of two predicates.
+    ///
+    /// Both operands are always evaluated; this operator does not short-circuit.
     And(Box<Predicate>, Box<Predicate>),
     /// Logical disjunction of two predicates.
+    ///
+    /// Both operands are always evaluated; this operator does not short-circuit.
     Or(Box<Predicate>, Box<Predicate>),
     /// Equality comparison between two expressions.
+    ///
+    /// `=` is only valid for operands of the same scalar type:
+    /// `INTEGER = INTEGER`, `BOOLEAN = BOOLEAN`, `STRING = STRING`,
+    /// and `BINARY = BINARY`. Mixed-type comparisons return an error.
     Eq(Expression, Expression),
     /// Greater-than comparison between two expressions.
+    ///
+    /// `>` is only valid for `INTEGER > INTEGER`. All other comparisons return
+    /// an error.
     Gt(Expression, Expression),
     /// Less-than comparison between two expressions.
+    ///
+    /// `<` is only valid for `INTEGER < INTEGER`. All other comparisons return
+    /// an error.
     Lt(Expression, Expression),
 }
 
 impl Predicate {
     /// Creates a negated predicate.
+    ///
+    /// The nested predicate is always evaluated when the resulting predicate is
+    /// evaluated.
     ///
     /// # Example
     ///
@@ -121,6 +138,8 @@ impl Predicate {
     }
 
     /// Creates a conjunction of two predicates.
+    ///
+    /// Both operands are always evaluated; this operator does not short-circuit.
     ///
     /// # Example
     ///
@@ -147,6 +166,8 @@ impl Predicate {
 
     /// Creates a disjunction of two predicates.
     ///
+    /// Both operands are always evaluated; this operator does not short-circuit.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -171,6 +192,10 @@ impl Predicate {
     }
 
     /// Creates an equality predicate from two expressions.
+    ///
+    /// `=` is only valid for operands of the same scalar type:
+    /// `INTEGER = INTEGER`, `BOOLEAN = BOOLEAN`, `STRING = STRING`,
+    /// and `BINARY = BINARY`. Mixed-type comparisons return an error.
     ///
     /// # Example
     ///
@@ -204,6 +229,9 @@ impl Predicate {
 
     /// Creates a greater-than predicate from two expressions.
     ///
+    /// `>` is only valid for `INTEGER > INTEGER`. All other comparisons return
+    /// an error.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -225,6 +253,9 @@ impl Predicate {
     }
 
     /// Creates a less-than predicate from two expressions.
+    ///
+    /// `<` is only valid for `INTEGER < INTEGER`. All other comparisons return
+    /// an error.
     ///
     /// # Example
     ///
@@ -266,7 +297,8 @@ impl Predicate {
     /// # Errors
     ///
     /// Returns [`Error::InvalidAttribute`] if one of the predicate expressions
-    /// references an attribute that does not exist in the tuple.
+    /// references an attribute that does not exist in the tuple, or if the
+    /// comparison is invalid for the operand types.
     pub fn eval(&self, tuple: &Tuple) -> Result<bool, Error> {
         match self {
             Predicate::Not(expr) => {
@@ -294,6 +326,9 @@ impl Predicate {
             Predicate::Gt(lhs, rhs) => {
                 let lhs = lhs.eval(tuple)?;
                 let rhs = rhs.eval(tuple)?;
+                if !matches!(lhs, Scalar::Integer(_)) && !matches!(rhs, Scalar::Integer(_)) {
+                    return Err(Error::InvalidAttribute);
+                }
                 if lhs.ty() != rhs.ty() {
                     return Err(Error::InvalidAttribute);
                 }
@@ -302,6 +337,9 @@ impl Predicate {
             Predicate::Lt(lhs, rhs) => {
                 let lhs = lhs.eval(tuple)?;
                 let rhs = rhs.eval(tuple)?;
+                if !matches!(lhs, Scalar::Integer(_)) && !matches!(rhs, Scalar::Integer(_)) {
+                    return Err(Error::InvalidAttribute);
+                }
                 if lhs.ty() != rhs.ty() {
                     return Err(Error::InvalidAttribute);
                 }
@@ -317,6 +355,22 @@ mod tests {
 
     fn integer_tuple(name: &str, value: i64) -> Tuple {
         Tuple::try_from(vec![(AttributeName::from(name), Scalar::Integer(value))]).unwrap()
+    }
+
+    fn boolean_tuple(name: &str, value: bool) -> Tuple {
+        Tuple::try_from(vec![(AttributeName::from(name), Scalar::Boolean(value))]).unwrap()
+    }
+
+    fn binary_tuple(name: &str, value: Vec<u8>) -> Tuple {
+        Tuple::try_from(vec![(AttributeName::from(name), Scalar::Binary(value))]).unwrap()
+    }
+
+    fn string_tuple(name: &str, value: &str) -> Tuple {
+        Tuple::try_from(vec![(
+            AttributeName::from(name),
+            Scalar::String(value.to_string()),
+        )])
+        .unwrap()
     }
 
     #[test]
@@ -366,6 +420,33 @@ mod tests {
     fn test_eq() {
         let tuple = integer_tuple("foo", 42);
         let predicate = Predicate::eq(AttributeName::from("foo"), Scalar::Integer(42));
+        assert!(predicate.eval(&tuple).unwrap());
+    }
+
+    #[test]
+    fn test_eq_supports_boolean_operands() {
+        let tuple = boolean_tuple("active", true);
+        let predicate = Predicate::eq(AttributeName::from("active"), Scalar::Boolean(true));
+
+        assert!(predicate.eval(&tuple).unwrap());
+    }
+
+    #[test]
+    fn test_eq_supports_string_operands() {
+        let tuple = string_tuple("city", "Berlin");
+        let predicate = Predicate::eq(AttributeName::from("city"), Scalar::String("Berlin".into()));
+
+        assert!(predicate.eval(&tuple).unwrap());
+    }
+
+    #[test]
+    fn test_eq_supports_binary_operands() {
+        let tuple = binary_tuple("payload", vec![1, 2, 3]);
+        let predicate = Predicate::eq(
+            AttributeName::from("payload"),
+            Scalar::Binary(vec![1, 2, 3]),
+        );
+
         assert!(predicate.eval(&tuple).unwrap());
     }
 
@@ -491,6 +572,45 @@ mod tests {
     }
 
     #[test]
+    fn test_gt_rejects_string_comparisons() {
+        let tuple = string_tuple("city", "Berlin");
+        let predicate = Predicate::gt(
+            AttributeName::from("city"),
+            Scalar::String("Amsterdam".into()),
+        );
+
+        assert!(
+            predicate.eval(&tuple).is_err(),
+            "greater-than comparison for string operands must return an error"
+        );
+    }
+
+    #[test]
+    fn test_gt_rejects_boolean_comparisons() {
+        let tuple = boolean_tuple("active", true);
+        let predicate = Predicate::gt(AttributeName::from("active"), Scalar::Boolean(false));
+
+        assert!(
+            predicate.eval(&tuple).is_err(),
+            "greater-than comparison for boolean operands must return an error"
+        );
+    }
+
+    #[test]
+    fn test_gt_rejects_binary_comparisons() {
+        let tuple = binary_tuple("payload", vec![1, 2, 3]);
+        let predicate = Predicate::gt(
+            AttributeName::from("payload"),
+            Scalar::Binary(vec![0, 1, 2]),
+        );
+
+        assert!(
+            predicate.eval(&tuple).is_err(),
+            "greater-than comparison for binary operands must return an error"
+        );
+    }
+
+    #[test]
     fn test_lt() {
         let tuple = integer_tuple("age", 18);
         let predicate = Predicate::lt(AttributeName::from("age"), Scalar::Integer(20));
@@ -517,6 +637,42 @@ mod tests {
         assert!(
             predicate.eval(&tuple).is_err(),
             "less-than comparison between different scalar types must return an error"
+        );
+    }
+
+    #[test]
+    fn test_lt_rejects_string_comparisons() {
+        let tuple = string_tuple("city", "Berlin");
+        let predicate = Predicate::lt(AttributeName::from("city"), Scalar::String("Paris".into()));
+
+        assert!(
+            predicate.eval(&tuple).is_err(),
+            "less-than comparison for string operands must return an error"
+        );
+    }
+
+    #[test]
+    fn test_lt_rejects_boolean_comparisons() {
+        let tuple = boolean_tuple("active", true);
+        let predicate = Predicate::lt(AttributeName::from("active"), Scalar::Boolean(false));
+
+        assert!(
+            predicate.eval(&tuple).is_err(),
+            "less-than comparison for boolean operands must return an error"
+        );
+    }
+
+    #[test]
+    fn test_lt_rejects_binary_comparisons() {
+        let tuple = binary_tuple("payload", vec![1, 2, 3]);
+        let predicate = Predicate::lt(
+            AttributeName::from("payload"),
+            Scalar::Binary(vec![4, 5, 6]),
+        );
+
+        assert!(
+            predicate.eval(&tuple).is_err(),
+            "less-than comparison for binary operands must return an error"
         );
     }
 }

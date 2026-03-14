@@ -14,7 +14,7 @@ This is the final version of the library. Further development is not planned, be
 use darwen::{
     heading,
     tuple,
-    prelude::{AttributeName, Expression, Predicate, RelationBuilder, Scalar, ScalarType},
+    prelude::{AttributeName, Predicate, RelationBuilder, Scalar, ScalarType},
 };
 
 let users = RelationBuilder::new()
@@ -47,6 +47,17 @@ let expected = RelationBuilder::new()
 assert_eq!(adults, expected);
 # Ok::<(), darwen::prelude::Error>(())
 ```
+
+## Predicates
+
+Darwen supports six predicate forms:
+
+- [`Not`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#variant.Not) / [`Predicate::not`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#method.not) negates another predicate.
+- [`And`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#variant.And) / [`Predicate::and`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#method.and) performs logical conjunction; both sides are always evaluated and errors are not hidden.
+- [`Or`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#variant.Or) / [`Predicate::or`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#method.or) performs logical disjunction; both sides are always evaluated and errors are not hidden.
+- [`Eq`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#variant.Eq) / [`Predicate::eq`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#method.eq) compares two operands for equality; only `INTEGER = INTEGER`, `BOOLEAN = BOOLEAN`, `STRING = STRING`, and `BINARY = BINARY` are valid. Mixed-type comparisons return an error.
+- [`Gt`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#variant.Gt) / [`Predicate::gt`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#method.gt) compares two operands with `>`; only `INTEGER > INTEGER` is valid. All other comparisons return an error.
+- [`Lt`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#variant.Lt) / [`Predicate::lt`](https://docs.rs/darwen/latest/darwen/enum.Predicate.html#method.lt) compares two operands with `<`; only `INTEGER < INTEGER` is valid. All other comparisons return an error.
 
 ## Implemented Operations
 
