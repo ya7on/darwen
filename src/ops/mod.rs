@@ -1,4 +1,5 @@
 mod difference;
+mod divide;
 mod intersect;
 mod join;
 mod product;

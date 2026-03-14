@@ -312,6 +312,27 @@ impl Heading {
         }
         Ok(common)
     }
+
+    /// Returns `true` if all attributes from `self` also exist in `other` with
+    /// the same scalar types.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use darwen::{heading, prelude::ScalarType};
+    /// # use darwen::prelude::HeadingBuilder;
+    ///
+    /// let subset = heading!(course = ScalarType::String)?;
+    /// let superset = heading!(name = ScalarType::String, course = ScalarType::String)?;
+    ///
+    /// assert!(subset.is_subset_of(&superset));
+    /// assert!(!superset.is_subset_of(&subset));
+    /// # Ok::<(), darwen::prelude::Error>(())
+    /// ```
+    #[must_use]
+    pub fn is_subset_of(&self, other: &Heading) -> bool {
+        self.iter().all(|(attr, ty)| other.get(attr) == Some(ty))
+    }
 }
 
 impl<K, V> TryFrom<Vec<(K, V)>> for Heading
@@ -459,6 +480,46 @@ mod tests {
                 rhs: ScalarType::Boolean,
             })
         );
+    }
+
+    #[test]
+    fn test_is_subset_of_returns_true_for_matching_subset() {
+        let subset = Heading::try_from(vec![
+            (AttributeName::from("foo"), ScalarType::Integer),
+            (AttributeName::from("bar"), ScalarType::Boolean),
+        ])
+        .unwrap();
+        let superset = Heading::try_from(vec![
+            (AttributeName::from("foo"), ScalarType::Integer),
+            (AttributeName::from("bar"), ScalarType::Boolean),
+            (AttributeName::from("baz"), ScalarType::String),
+        ])
+        .unwrap();
+
+        assert!(subset.is_subset_of(&superset));
+    }
+
+    #[test]
+    fn test_is_subset_of_returns_false_when_attribute_is_missing() {
+        let subset = Heading::try_from(vec![
+            (AttributeName::from("foo"), ScalarType::Integer),
+            (AttributeName::from("bar"), ScalarType::Boolean),
+        ])
+        .unwrap();
+        let other =
+            Heading::try_from(vec![(AttributeName::from("foo"), ScalarType::Integer)]).unwrap();
+
+        assert!(!subset.is_subset_of(&other));
+    }
+
+    #[test]
+    fn test_is_subset_of_returns_false_when_attribute_type_differs() {
+        let subset =
+            Heading::try_from(vec![(AttributeName::from("foo"), ScalarType::Integer)]).unwrap();
+        let other =
+            Heading::try_from(vec![(AttributeName::from("foo"), ScalarType::Boolean)]).unwrap();
+
+        assert!(!subset.is_subset_of(&other));
     }
 
     #[test]

@@ -248,6 +248,42 @@ Output
 | --- |
 | bar |
 
+### DIVIDE (÷)
+
+`enrollments ÷ required_courses`
+
+`enrollments`
+
+| student | course |
+| --- | --- |
+| Ann | Math |
+| Ann | Rust |
+| Bob | Math |
+| Bob | Rust |
+| Bob | DB |
+| Kate | Math |
+
+`required_courses`
+
+| course |
+| --- |
+| Math |
+| Rust |
+
+Output
+
+| student |
+| --- |
+| Ann |
+| Bob |
+
+`DIVIDE` returns all tuples over the attributes that are not part of the
+divisor heading, for which the dividend relation contains a matching tuple for
+every tuple in the divisor relation.
+
+The divisor heading must be a subset of the dividend heading; otherwise
+`Relation::divide` returns `HeadingMismatch`.
+
 ## Sources
 
 - [The Third Manifesto](https://www.dcs.warwick.ac.uk/~hugh/TTM/DTATRM.pdf) - the foundational manifesto of relational databases
