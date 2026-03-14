@@ -213,6 +213,20 @@ mod tests {
     }
 
     #[test]
+    fn test_project_rejects_duplicate_attributes_in_projection_list() -> Result<(), Error> {
+        let relation = Relation::new_from_iter(
+            Heading::try_from(vec![(AttributeName::from("foo"), ScalarType::Integer)]).unwrap(),
+            vec![Tuple::try_from(vec![(AttributeName::from("foo"), Scalar::Integer(1))]).unwrap()],
+        )?;
+
+        assert_eq!(
+            relation.project(&[AttributeName::from("foo"), AttributeName::from("foo")]),
+            Err(Error::AttributeAlreadyExists { name: "foo".into() })
+        );
+        Ok(())
+    }
+
+    #[test]
     fn test_tuple_project_rejects_missing_attribute() {
         let tuple =
             Tuple::try_from(vec![(AttributeName::from("foo"), Scalar::Integer(1))]).unwrap();

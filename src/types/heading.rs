@@ -316,7 +316,7 @@ impl Heading {
 
 impl<K, V> TryFrom<Vec<(K, V)>> for Heading
 where
-    K: Into<AttributeName> + Clone,
+    K: Into<AttributeName>,
     V: Into<ScalarType>,
 {
     type Error = Error;
@@ -324,9 +324,11 @@ where
     fn try_from(value: Vec<(K, V)>) -> Result<Self, Self::Error> {
         let mut attributes = BTreeMap::new();
         for (name, ty) in value {
-            if attributes.insert(name.clone().into(), ty.into()).is_some() {
-                return Err(Error::AttributeAlreadyExists { name: name.into() });
+            let key = name.into();
+            if attributes.contains_key(&key) {
+                return Err(Error::AttributeAlreadyExists { name: key });
             }
+            attributes.insert(key, ty.into());
         }
         Ok(Self { attributes })
     }
@@ -405,6 +407,25 @@ mod tests {
         ])
         .unwrap();
         assert!(heading.validate_tuple(&tuple).is_err());
+    }
+
+    #[test]
+    fn test_validate_tuple_rejects_invalid_width() {
+        let heading = Heading::try_from(vec![
+            (AttributeName::from("foo"), ScalarType::Boolean),
+            (AttributeName::from("bar"), ScalarType::Integer),
+        ])
+        .unwrap();
+        let tuple =
+            Tuple::try_from(vec![(AttributeName::from("foo"), Scalar::Boolean(true))]).unwrap();
+
+        assert_eq!(
+            heading.validate_tuple(&tuple),
+            Err(Error::InvalidWidth {
+                expected: 2,
+                actual: 1,
+            })
+        );
     }
 
     #[test]

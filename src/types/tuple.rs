@@ -214,7 +214,7 @@ impl Tuple {
 
 impl<K, V> TryFrom<Vec<(K, V)>> for Tuple
 where
-    K: Into<AttributeName> + Clone,
+    K: Into<AttributeName>,
     V: Into<Scalar>,
 {
     type Error = Error;
@@ -222,14 +222,11 @@ where
     fn try_from(input: Vec<(K, V)>) -> Result<Self, Self::Error> {
         let mut values = BTreeMap::new();
         for (attribute, value) in input {
-            if values
-                .insert(attribute.clone().into(), value.into())
-                .is_some()
-            {
-                return Err(Error::AttributeAlreadyExists {
-                    name: attribute.into(),
-                });
+            let key = attribute.into();
+            if values.contains_key(&key) {
+                return Err(Error::AttributeAlreadyExists { name: key });
             }
+            values.insert(key, value.into());
         }
 
         Ok(Self { values })
