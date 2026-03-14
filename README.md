@@ -79,6 +79,15 @@ Output
 | --- | --- |
 | Bob | 24 |
 
+Code
+
+```rust
+let adults = people.restrict(&Predicate::gt(
+    AttributeName::from("age"),
+    Scalar::Integer(20),
+))?;
+```
+
 ### PROJECT (π)
 [Example](examples/project.rs) - `cargo run --example project`
 
@@ -98,6 +107,12 @@ Output
 | Ann |
 | Bob |
 
+Code
+
+```rust
+let names = people.project(&[AttributeName::from("name")])?;
+```
+
 ### RENAME (ρ)
 [Example](examples/rename.rs) - `cargo run --example rename`
 
@@ -116,6 +131,15 @@ Output
 | --- |
 | Ann |
 | Bob |
+
+Code
+
+```rust
+let renamed = people.rename(&[(
+    AttributeName::from("name"),
+    AttributeName::from("person_name"),
+)])?;
+```
 
 ### UNION (⋃)
 [Example](examples/union.rs) - `cargo run --example union`
@@ -144,6 +168,12 @@ Output
 | bar |
 | baz |
 
+Code
+
+```rust
+let result = a.union(&b)?;
+```
+
 ### DIFFERENCE (−)
 [Example](examples/difference.rs) - `cargo run --example difference`
 
@@ -169,6 +199,12 @@ Output
 | --- |
 | foo |
 | baz |
+
+Code
+
+```rust
+let result = a.difference(&b)?;
+```
 
 ### PRODUCT (×)
 [Example](examples/product.rs) - `cargo run --example product`
@@ -198,6 +234,12 @@ Output
 | blue | S |
 | blue | M |
 
+Code
+
+```rust
+let result = colors.product(&sizes)?;
+```
+
 ### JOIN (⋈)
 [Example](examples/join.rs) - `cargo run --example join`
 
@@ -222,6 +264,12 @@ Output
 | id | name | city |
 | --- | --- | --- |
 | 1 | Ann | Rome |
+
+Code
+
+```rust
+let result = users.join(&cities)?;
+```
 
 ### INTERSECT (∩)
 [Example](examples/intersect.rs) - `cargo run --example intersect`
@@ -248,7 +296,14 @@ Output
 | --- |
 | bar |
 
+Code
+
+```rust
+let result = a.intersect(&b)?;
+```
+
 ### DIVIDE (÷)
+[Example](examples/divide.rs) - `cargo run --example divide`
 
 `enrollments ÷ required_courses`
 
@@ -277,12 +332,11 @@ Output
 | Ann |
 | Bob |
 
-`DIVIDE` returns all tuples over the attributes that are not part of the
-divisor heading, for which the dividend relation contains a matching tuple for
-every tuple in the divisor relation.
+Code
 
-The divisor heading must be a subset of the dividend heading; otherwise
-`Relation::divide` returns `HeadingMismatch`.
+```rust
+let result = enrollments.divide(&required_courses)?;
+```
 
 ## Sources
 
