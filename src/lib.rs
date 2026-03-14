@@ -46,6 +46,23 @@
 //! assert_eq!(adults, expected);
 //! # Ok::<(), darwen::prelude::Error>(())
 //! ```
+//!
+//! # Predicates
+//!
+//! Darwen supports six predicate forms:
+//!
+//! - [`Predicate::Not`] / [`Predicate::not`] negates another predicate.
+//! - [`Predicate::And`] / [`Predicate::and`] performs logical conjunction;
+//!   both sides are always evaluated and errors are not hidden.
+//! - [`Predicate::Or`] / [`Predicate::or`] performs logical disjunction;
+//!   both sides are always evaluated and errors are not hidden.
+//! - [`Predicate::Eq`] / [`Predicate::eq`] compares two operands for equality;
+//!   only `INTEGER = INTEGER`, `BOOLEAN = BOOLEAN`, `STRING = STRING`, and
+//!   `BINARY = BINARY` are valid. Mixed-type comparisons return an error.
+//! - [`Predicate::Gt`] / [`Predicate::gt`] compares two operands with `>`;
+//!   only `INTEGER > INTEGER` is valid. All other comparisons return an error.
+//! - [`Predicate::Lt`] / [`Predicate::lt`] compares two operands with `<`;
+//!   only `INTEGER < INTEGER` is valid. All other comparisons return an error.
 mod error;
 mod ops;
 mod types;

@@ -7,6 +7,8 @@ pub enum ScalarType {
     Boolean,
     /// Signed 64-bit integers.
     Integer,
+    /// Binary data.
+    Binary,
     /// Owned UTF-8 strings.
     String,
 }
@@ -17,6 +19,7 @@ impl Display for ScalarType {
             ScalarType::Boolean => write!(f, "BOOLEAN"),
             ScalarType::Integer => write!(f, "INTEGER"),
             ScalarType::String => write!(f, "STRING"),
+            ScalarType::Binary => write!(f, "BINARY"),
         }
     }
 }
@@ -38,6 +41,8 @@ pub enum Scalar {
     Boolean(bool),
     /// A signed 64-bit integer scalar value.
     Integer(i64),
+    /// A binary scalar value.
+    Binary(Vec<u8>),
     /// A string scalar value.
     String(String),
 }
@@ -59,6 +64,7 @@ impl Scalar {
         match self {
             Scalar::Boolean(_) => ScalarType::Boolean,
             Scalar::Integer(_) => ScalarType::Integer,
+            Scalar::Binary(_) => ScalarType::Binary,
             Scalar::String(_) => ScalarType::String,
         }
     }
@@ -73,6 +79,12 @@ impl From<bool> for Scalar {
 impl From<i64> for Scalar {
     fn from(value: i64) -> Self {
         Scalar::Integer(value)
+    }
+}
+
+impl From<Vec<u8>> for Scalar {
+    fn from(value: Vec<u8>) -> Self {
+        Scalar::Binary(value)
     }
 }
 
@@ -93,6 +105,7 @@ impl Display for Scalar {
         match self {
             Scalar::Boolean(value) => write!(f, "BOOLEAN({value})"),
             Scalar::Integer(value) => write!(f, "INTEGER({value})"),
+            Scalar::Binary(value) => write!(f, "BINARY({value:?})"),
             Scalar::String(value) => write!(f, "STRING({value})"),
         }
     }
@@ -108,6 +121,10 @@ mod tests {
         assert_eq!(scalar.ty(), ScalarType::Boolean);
         let scalar = Scalar::Integer(42);
         assert_eq!(scalar.ty(), ScalarType::Integer);
+        let scalar = Scalar::Binary(vec![1, 2, 3]);
+        assert_eq!(scalar.ty(), ScalarType::Binary);
+        let scalar = Scalar::String(String::from("Hello"));
+        assert_eq!(scalar.ty(), ScalarType::String);
     }
 
     #[test]
@@ -120,6 +137,13 @@ mod tests {
         let scalar = Scalar::from(42_i64);
 
         assert_eq!(scalar, Scalar::Integer(42));
+    }
+
+    #[test]
+    fn test_from_vec_u8_creates_binary_scalar() {
+        let scalar = Scalar::from(vec![1, 2, 3]);
+
+        assert_eq!(scalar, Scalar::Binary(vec![1, 2, 3]));
     }
 
     #[test]
