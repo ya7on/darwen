@@ -194,7 +194,7 @@ impl Heading {
             return false;
         }
         for (name, ty) in &self.attributes {
-            let Some(value) = tuple.get(&AttributeName::from(name)) else {
+            let Some(value) = tuple.get(name) else {
                 return false;
             };
             if value.ty() != *ty {
@@ -297,13 +297,17 @@ impl Heading {
     }
 }
 
-impl TryFrom<Vec<(AttributeName, ScalarType)>> for Heading {
+impl<K, V> TryFrom<Vec<(K, V)>> for Heading
+where
+    K: Into<AttributeName>,
+    V: Into<ScalarType>,
+{
     type Error = Error;
 
-    fn try_from(value: Vec<(AttributeName, ScalarType)>) -> Result<Self, Self::Error> {
+    fn try_from(value: Vec<(K, V)>) -> Result<Self, Self::Error> {
         let mut attributes = BTreeMap::new();
         for (name, ty) in value {
-            if attributes.insert(name.clone(), ty).is_some() {
+            if attributes.insert(name.into(), ty.into()).is_some() {
                 return Err(Error::InvalidAttribute);
             }
         }
@@ -336,8 +340,14 @@ mod tests {
         ])
         .unwrap();
         assert_eq!(heading.attributes.len(), 2);
-        assert_eq!(heading.attributes["foo"], ScalarType::Boolean);
-        assert_eq!(heading.attributes["bar"], ScalarType::Integer);
+        assert_eq!(
+            heading.attributes[&AttributeName::from("foo")],
+            ScalarType::Boolean
+        );
+        assert_eq!(
+            heading.attributes[&AttributeName::from("bar")],
+            ScalarType::Integer
+        );
     }
 
     #[test]

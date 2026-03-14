@@ -28,7 +28,7 @@ impl Relation {
     ///
     /// ```rust
     /// use darwen::prelude::{
-    ///     AttributeName, Expression, Heading, Predicate, Relation, Scalar, ScalarType, Tuple,
+    ///     AttributeName, Heading, Predicate, Relation, Scalar, ScalarType, Tuple,
     /// };
     ///
     /// let people = Relation::new_from_iter(
@@ -48,9 +48,9 @@ impl Relation {
     ///     ],
     /// )?;
     ///
-    /// let adults = people.restrict(&Predicate::Eq(
-    ///     Expression::Attribute(AttributeName::from("age")),
-    ///     Expression::Const(Scalar::Integer(24)),
+    /// let adults = people.restrict(&Predicate::eq(
+    ///     AttributeName::from("age"),
+    ///     Scalar::Integer(24),
     /// ))?;
     ///
     /// assert_eq!(
@@ -82,7 +82,7 @@ impl Relation {
 #[cfg(test)]
 mod tests {
     use crate::{
-        prelude::{Expression, Heading, Scalar, ScalarType, Tuple},
+        prelude::{Heading, Scalar, ScalarType, Tuple},
         types::AttributeName,
     };
 
@@ -102,9 +102,9 @@ mod tests {
 
         assert_eq!(
             relation
-                .restrict(&Predicate::Eq(
-                    Expression::Attribute(AttributeName::from("foo")),
-                    Expression::Const(Scalar::Integer(2)),
+                .restrict(&Predicate::eq(
+                    AttributeName::from("foo"),
+                    Scalar::Integer(2)
                 ))
                 .unwrap(),
             Relation::new_from_iter(
@@ -126,9 +126,9 @@ mod tests {
         )?;
 
         assert_eq!(
-            relation.restrict(&Predicate::Eq(
-                Expression::Attribute(AttributeName::from("foo")),
-                Expression::Const(Scalar::Integer(2)),
+            relation.restrict(&Predicate::eq(
+                AttributeName::from("foo"),
+                Scalar::Integer(2)
             ))?,
             Relation::new_from_iter(
                 Heading::try_from(vec![(AttributeName::from("foo"), ScalarType::Integer)]).unwrap(),
@@ -146,9 +146,9 @@ mod tests {
         )?;
 
         assert_eq!(
-            relation.restrict(&Predicate::Eq(
-                Expression::Attribute(AttributeName::from("bar")),
-                Expression::Const(Scalar::Integer(1)),
+            relation.restrict(&Predicate::eq(
+                AttributeName::from("bar"),
+                Scalar::Integer(1)
             )),
             Err(Error::InvalidAttribute)
         );

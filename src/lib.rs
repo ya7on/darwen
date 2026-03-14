@@ -11,7 +11,7 @@
 //!     heading,
 //!     tuple,
 //!     prelude::{
-//!         AttributeName, Expression, HeadingBuilder, Predicate, RelationBuilder, Scalar,
+//!         AttributeName, HeadingBuilder, Predicate, RelationBuilder, Scalar,
 //!         ScalarType, TupleBuilder,
 //!     },
 //! };
@@ -29,9 +29,9 @@
 //!     ])
 //!     .build()?;
 //!
-//! let adults = users.restrict(&Predicate::Gt(
-//!     Expression::Attribute(AttributeName::from("age")),
-//!     Expression::Const(Scalar::Integer(20)),
+//! let adults = users.restrict(&Predicate::gt(
+//!     AttributeName::from("age"),
+//!     Scalar::Integer(20),
 //! ))?;
 //!
 //! let expected = RelationBuilder::new()

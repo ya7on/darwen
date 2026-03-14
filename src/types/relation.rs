@@ -339,11 +339,8 @@ mod tests {
             ])
             .unwrap(),
         );
-        let tuple = Tuple::try_from(vec![
-            ("a".to_string(), Scalar::Integer(1)),
-            ("b".to_string(), Scalar::Integer(2)),
-        ])
-        .unwrap();
+        let tuple =
+            Tuple::try_from(vec![("a", Scalar::Integer(1)), ("b", Scalar::Integer(2))]).unwrap();
         assert!(relation.insert(tuple).is_ok());
     }
 
