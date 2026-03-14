@@ -64,21 +64,50 @@
 //! - [`Predicate::Lt`] / [`Predicate::lt`] compares two operands with `<`;
 //!   only `INTEGER < INTEGER` is valid. All other comparisons return an error.
 //!
-//! # Divide
+//! # Operators
+//!
+//! ## Restrict
+//!
+//! [`Relation::restrict`] implements selection (`σ`) and returns only tuples
+//! that satisfy a [`Predicate`].
+//!
+//! ## Project
+//!
+//! [`Relation::project`] implements projection (`π`) and keeps only the
+//! requested attributes.
+//!
+//! ## Rename
+//!
+//! [`Relation::rename`] implements renaming (`ρ`) and changes attribute names
+//! according to a mapping.
+//!
+//! ## Union
+//!
+//! [`Relation::union`] implements union (`⋃`) for relations with identical
+//! headings.
+//!
+//! ## Difference
+//!
+//! [`Relation::difference`] implements difference (`−`) for relations with
+//! identical headings.
+//!
+//! ## Product
+//!
+//! [`Relation::product`] implements Cartesian product (`×`) for relations with
+//! disjoint headings.
+//!
+//! ## Join
+//!
+//! [`Relation::join`] implements natural join (`⋈`) on shared attributes.
+//!
+//! ## Intersect
+//!
+//! [`Relation::intersect`] implements intersection (`∩`) for relations with
+//! identical headings.
+//!
+//! ## Divide
 //!
 //! [`Relation::divide`] implements relational division (`÷`).
-//!
-//! For relations `R(X, Y)` and `S(Y)`, the result `R ÷ S` contains all tuples
-//! over `X` for which `R` contains a matching tuple for every tuple in `S`.
-//!
-//! Example:
-//! - if `Enrollments(student, course)` contains `(Ann, Math)`, `(Ann, Rust)`,
-//!   `(Bob, Math)`, and `(Bob, Rust)`
-//! - and `Required(course)` contains `Math` and `Rust`
-//! - then `Enrollments ÷ Required` returns `Ann` and `Bob`
-//!
-//! The divisor heading must be a subset of the dividend heading; otherwise
-//! [`Relation::divide`] returns [`Error::HeadingMismatch`].
 mod error;
 mod ops;
 mod types;
