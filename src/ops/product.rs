@@ -8,7 +8,7 @@ impl Heading {
         let mut attributes = self.attributes.clone();
         for (name, ty) in &other.attributes {
             if attributes.contains_key(name) {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeAlreadyExists { name: name.clone() });
             }
             attributes.insert(name.clone(), *ty);
         }
@@ -21,7 +21,7 @@ impl Tuple {
         let mut values = self.values.clone();
         for (name, value) in &other.values {
             if values.contains_key(name) {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeAlreadyExists { name: name.clone() });
             }
             values.insert(name.clone(), value.clone());
         }
@@ -57,8 +57,8 @@ impl Relation {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidAttribute`] if both relations contain the same
-    /// attribute name, making the Cartesian product ambiguous.
+    /// Returns [`Error::AttributeAlreadyExists`] if both relations contain the
+    /// same attribute name, making the Cartesian product ambiguous.
     ///
     /// # Example
     ///
@@ -223,7 +223,10 @@ mod tests {
             vec![Tuple::try_from(vec![(AttributeName::from("foo"), Scalar::Integer(2))]).unwrap()],
         )?;
 
-        assert_eq!(lhs.product(&rhs), Err(Error::InvalidAttribute));
+        assert_eq!(
+            lhs.product(&rhs),
+            Err(Error::AttributeAlreadyExists { name: "foo".into() })
+        );
         Ok(())
     }
 
@@ -240,6 +243,11 @@ mod tests {
         ])
         .unwrap();
 
-        assert_eq!(lhs.product(&rhs), Err(Error::InvalidAttribute));
+        assert_eq!(
+            lhs.product(&rhs),
+            Err(Error::AttributeAlreadyExists {
+                name: "shared".into()
+            })
+        );
     }
 }

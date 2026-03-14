@@ -109,8 +109,8 @@ impl HeadingBuilder {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidAttribute`] if the builder contains duplicate
-    /// attribute names.
+    /// Returns [`Error::AttributeAlreadyExists`] if the builder contains
+    /// duplicate attribute names.
     pub fn build(self) -> Result<Heading, Error> {
         Heading::try_from(self.attributes)
     }
@@ -185,23 +185,37 @@ impl Heading {
     /// let heading = heading!(id = ScalarType::Integer)?;
     /// let tuple = tuple!(id = 1)?;
     ///
-    /// assert!(heading.validate_tuple(&tuple));
+    /// assert!(heading.validate_tuple(&tuple).is_ok());
     /// # Ok::<(), darwen::prelude::Error>(())
     /// ```
-    #[must_use]
-    pub fn validate_tuple(&self, tuple: &Tuple) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::InvalidWidth`] if the tuple arity does not match the
+    /// heading degree.
+    /// Returns [`Error::AttributeNotFound`] if the tuple is missing an
+    /// attribute required by the heading.
+    /// Returns [`Error::ScalarTypeMismatch`] if a tuple value has a different
+    /// scalar type than the heading requires.
+    pub fn validate_tuple(&self, tuple: &Tuple) -> Result<(), Error> {
         if self.degree() != tuple.arity() {
-            return false;
+            return Err(Error::InvalidWidth {
+                expected: self.degree(),
+                actual: tuple.arity(),
+            });
         }
         for (name, ty) in &self.attributes {
             let Some(value) = tuple.get(name) else {
-                return false;
+                return Err(Error::AttributeNotFound { name: name.clone() });
             };
             if value.ty() != *ty {
-                return false;
+                return Err(Error::ScalarTypeMismatch {
+                    lhs: value.ty(),
+                    rhs: *ty,
+                });
             }
         }
-        true
+        Ok(())
     }
 
     /// Returns the type of an attribute if it exists.
@@ -280,8 +294,8 @@ impl Heading {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidAttribute`] if the same attribute name exists in
-    /// both headings with different scalar types.
+    /// Returns [`Error::ScalarTypeMismatch`] if the same attribute name exists
+    /// in both headings with different scalar types.
     pub fn common(&self, other: &Heading) -> Result<Vec<AttributeName>, Error> {
         let mut common = Vec::with_capacity(self.degree());
         for (attr, ty) in self.iter() {
@@ -289,7 +303,10 @@ impl Heading {
                 continue;
             };
             if ty != other_ty {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::ScalarTypeMismatch {
+                    lhs: *ty,
+                    rhs: *other_ty,
+                });
             }
             common.push(attr.clone());
         }
@@ -307,9 +324,11 @@ where
     fn try_from(value: Vec<(K, V)>) -> Result<Self, Self::Error> {
         let mut attributes = BTreeMap::new();
         for (name, ty) in value {
-            if attributes.insert(name.into(), ty.into()).is_some() {
-                return Err(Error::InvalidAttribute);
+            let key = name.into();
+            if attributes.contains_key(&key) {
+                return Err(Error::AttributeAlreadyExists { name: key });
             }
+            attributes.insert(key, ty.into());
         }
         Ok(Self { attributes })
     }
@@ -372,7 +391,7 @@ mod tests {
             (AttributeName::from("bar"), Scalar::Integer(42)),
         ])
         .unwrap();
-        assert!(heading.validate_tuple(&tuple));
+        assert!(heading.validate_tuple(&tuple).is_ok());
     }
 
     #[test]
@@ -387,7 +406,26 @@ mod tests {
             (AttributeName::from("bar"), Scalar::Boolean(false)),
         ])
         .unwrap();
-        assert!(!heading.validate_tuple(&tuple));
+        assert!(heading.validate_tuple(&tuple).is_err());
+    }
+
+    #[test]
+    fn test_validate_tuple_rejects_invalid_width() {
+        let heading = Heading::try_from(vec![
+            (AttributeName::from("foo"), ScalarType::Boolean),
+            (AttributeName::from("bar"), ScalarType::Integer),
+        ])
+        .unwrap();
+        let tuple =
+            Tuple::try_from(vec![(AttributeName::from("foo"), Scalar::Boolean(true))]).unwrap();
+
+        assert_eq!(
+            heading.validate_tuple(&tuple),
+            Err(Error::InvalidWidth {
+                expected: 2,
+                actual: 1,
+            })
+        );
     }
 
     #[test]
@@ -414,7 +452,13 @@ mod tests {
         let rhs =
             Heading::try_from(vec![(AttributeName::from("foo"), ScalarType::Boolean)]).unwrap();
 
-        assert_eq!(lhs.common(&rhs), Err(Error::InvalidAttribute));
+        assert_eq!(
+            lhs.common(&rhs),
+            Err(Error::ScalarTypeMismatch {
+                lhs: ScalarType::Integer,
+                rhs: ScalarType::Boolean,
+            })
+        );
     }
 
     #[test]

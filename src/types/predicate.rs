@@ -46,11 +46,14 @@ impl Expression {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidAttribute`] if the expression references an
+    /// Returns [`Error::AttributeNotFound`] if the expression references an
     /// attribute that does not exist in the tuple.
     pub fn eval(&self, tuple: &Tuple) -> Result<Scalar, Error> {
         match self {
-            Expression::Attribute(attr) => tuple.get(attr).cloned().ok_or(Error::InvalidAttribute),
+            Expression::Attribute(attr) => tuple
+                .get(attr)
+                .cloned()
+                .ok_or(Error::AttributeNotFound { name: attr.clone() }),
             Expression::Const(val) => Ok(val.clone()),
         }
     }
@@ -296,9 +299,12 @@ impl Predicate {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidAttribute`] if one of the predicate expressions
-    /// references an attribute that does not exist in the tuple, or if the
-    /// comparison is invalid for the operand types.
+    /// Returns [`Error::AttributeNotFound`] if one of the predicate expressions
+    /// references an attribute that does not exist in the tuple.
+    /// Returns [`Error::ScalarTypeMismatch`] if `Eq` compares operands of
+    /// different scalar types.
+    /// Returns [`Error::NonComparableTypes`] if `Gt` or `Lt` is used with
+    /// non-integer operands.
     pub fn eval(&self, tuple: &Tuple) -> Result<bool, Error> {
         match self {
             Predicate::Not(expr) => {
@@ -319,29 +325,32 @@ impl Predicate {
                 let lhs = lhs.eval(tuple)?;
                 let rhs = rhs.eval(tuple)?;
                 if lhs.ty() != rhs.ty() {
-                    return Err(Error::InvalidAttribute);
+                    return Err(Error::ScalarTypeMismatch {
+                        lhs: lhs.ty(),
+                        rhs: rhs.ty(),
+                    });
                 }
                 Ok(lhs == rhs)
             }
             Predicate::Gt(lhs, rhs) => {
                 let lhs = lhs.eval(tuple)?;
                 let rhs = rhs.eval(tuple)?;
-                if !matches!(lhs, Scalar::Integer(_)) && !matches!(rhs, Scalar::Integer(_)) {
-                    return Err(Error::InvalidAttribute);
-                }
-                if lhs.ty() != rhs.ty() {
-                    return Err(Error::InvalidAttribute);
+                if !matches!(lhs, Scalar::Integer(_)) || !matches!(rhs, Scalar::Integer(_)) {
+                    return Err(Error::NonComparableTypes {
+                        lhs: lhs.ty(),
+                        rhs: rhs.ty(),
+                    });
                 }
                 Ok(lhs > rhs)
             }
             Predicate::Lt(lhs, rhs) => {
                 let lhs = lhs.eval(tuple)?;
                 let rhs = rhs.eval(tuple)?;
-                if !matches!(lhs, Scalar::Integer(_)) && !matches!(rhs, Scalar::Integer(_)) {
-                    return Err(Error::InvalidAttribute);
-                }
-                if lhs.ty() != rhs.ty() {
-                    return Err(Error::InvalidAttribute);
+                if !matches!(lhs, Scalar::Integer(_)) || !matches!(rhs, Scalar::Integer(_)) {
+                    return Err(Error::NonComparableTypes {
+                        lhs: lhs.ty(),
+                        rhs: rhs.ty(),
+                    });
                 }
                 Ok(lhs < rhs)
             }
@@ -515,7 +524,9 @@ mod tests {
 
         assert_eq!(
             Expression::Attribute(AttributeName::from("missing")).eval(&tuple),
-            Err(Error::InvalidAttribute)
+            Err(Error::AttributeNotFound {
+                name: AttributeName::from("missing")
+            })
         );
     }
 
@@ -527,7 +538,12 @@ mod tests {
             Predicate::eq(AttributeName::from("missing"), Scalar::Integer(42)),
         );
 
-        assert_eq!(predicate.eval(&tuple), Err(Error::InvalidAttribute));
+        assert_eq!(
+            predicate.eval(&tuple),
+            Err(Error::AttributeNotFound {
+                name: AttributeName::from("missing")
+            })
+        );
     }
 
     #[test]
@@ -538,7 +554,12 @@ mod tests {
             Predicate::eq(AttributeName::from("missing"), Scalar::Integer(42)),
         );
 
-        assert_eq!(predicate.eval(&tuple), Err(Error::InvalidAttribute));
+        assert_eq!(
+            predicate.eval(&tuple),
+            Err(Error::AttributeNotFound {
+                name: AttributeName::from("missing")
+            })
+        );
     }
 
     #[test]
@@ -549,7 +570,12 @@ mod tests {
             Predicate::eq(AttributeName::from("missing"), Scalar::Integer(42)),
         );
 
-        assert_eq!(predicate.eval(&tuple), Err(Error::InvalidAttribute));
+        assert_eq!(
+            predicate.eval(&tuple),
+            Err(Error::AttributeNotFound {
+                name: AttributeName::from("missing")
+            })
+        );
     }
 
     #[test]

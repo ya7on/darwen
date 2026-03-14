@@ -27,7 +27,7 @@ impl Relation {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidHeading`] if the relations do not have the same
+    /// Returns [`Error::HeadingMismatch`] if the relations do not have the same
     /// heading.
     ///
     /// # Example
@@ -67,7 +67,7 @@ impl Relation {
     /// ```
     pub fn union(&self, other: &Relation) -> Result<Relation, Error> {
         if self.heading != other.heading {
-            return Err(Error::InvalidHeading);
+            return Err(Error::HeadingMismatch);
         }
         let mut relation = Relation::new(self.heading.clone());
         for tuple in self.body.iter().chain(other.body.iter()) {
@@ -137,7 +137,7 @@ mod tests {
             Vec::new(),
         )?;
 
-        assert_eq!(lhs.union(&rhs), Err(Error::InvalidHeading));
+        assert_eq!(lhs.union(&rhs), Err(Error::HeadingMismatch));
         Ok(())
     }
 

@@ -28,9 +28,8 @@ impl Relation {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidAttribute`] if shared attribute names have
-    /// incompatible scalar types or if tuple merging produces an invalid
-    /// heading.
+    /// Returns [`Error::ScalarTypeMismatch`] if shared attribute names exist in
+    /// both relations with different scalar types.
     ///
     /// # Example
     ///

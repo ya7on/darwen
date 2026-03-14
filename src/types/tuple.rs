@@ -108,8 +108,8 @@ impl TupleBuilder {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidTuple`] if the builder contains duplicate
-    /// attribute names.
+    /// Returns [`Error::AttributeAlreadyExists`] if the builder contains
+    /// duplicate attribute names.
     pub fn build(self) -> Result<Tuple, Error> {
         Tuple::try_from(self.values)
     }
@@ -222,9 +222,11 @@ where
     fn try_from(input: Vec<(K, V)>) -> Result<Self, Self::Error> {
         let mut values = BTreeMap::new();
         for (attribute, value) in input {
-            if values.insert(attribute.into(), value.into()).is_some() {
-                return Err(Error::InvalidTuple);
+            let key = attribute.into();
+            if values.contains_key(&key) {
+                return Err(Error::AttributeAlreadyExists { name: key });
             }
+            values.insert(key, value.into());
         }
 
         Ok(Self { values })

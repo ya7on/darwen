@@ -21,8 +21,12 @@ impl Relation {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidAttribute`] if the predicate references an
+    /// Returns [`Error::AttributeNotFound`] if the predicate references an
     /// attribute that does not exist in the relation tuples.
+    /// Returns [`Error::ScalarTypeMismatch`] if the predicate uses `Eq` to
+    /// compare values of different scalar types.
+    /// Returns [`Error::NonComparableTypes`] if the predicate uses `<` or `>`
+    /// with non-integer operands.
     ///
     /// # Example
     ///
@@ -150,7 +154,9 @@ mod tests {
                 AttributeName::from("bar"),
                 Scalar::Integer(1)
             )),
-            Err(Error::InvalidAttribute)
+            Err(Error::AttributeNotFound {
+                name: AttributeName::from("bar")
+            })
         );
         Ok(())
     }

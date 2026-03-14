@@ -151,9 +151,16 @@ impl RelationBuilder {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidHeading`] if the heading was not provided.
+    /// Returns [`Error::HeadingMissing`] if the heading was not provided.
+    /// Returns [`Error::InvalidWidth`] if one of the body tuples has a
+    /// different arity than the heading degree.
+    /// Returns [`Error::AttributeNotFound`] if one of the body tuples is
+    /// missing an attribute required by the heading.
+    /// Returns [`Error::ScalarTypeMismatch`] if one of the body tuples
+    /// contains a value with a different scalar type than the heading
+    /// requires.
     pub fn build(self) -> Result<Relation, Error> {
-        let heading = self.heading.ok_or(Error::InvalidHeading)?;
+        let heading = self.heading.ok_or(Error::HeadingMissing)?;
         let mut relation = Relation::new(heading);
         for tuple in self.body {
             relation.insert(tuple)?;
@@ -251,8 +258,12 @@ impl Relation {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidTuple`] if any tuple does not conform to the
-    /// provided heading.
+    /// Returns [`Error::InvalidWidth`] if any tuple has a different arity than
+    /// the provided heading degree.
+    /// Returns [`Error::AttributeNotFound`] if any tuple is missing an
+    /// attribute required by the provided heading.
+    /// Returns [`Error::ScalarTypeMismatch`] if any tuple contains a value with
+    /// a different scalar type than the provided heading requires.
     pub fn new_from_iter<T>(heading: Heading, body: T) -> Result<Self, Error>
     where
         T: IntoIterator<Item = Tuple>,
@@ -302,12 +313,14 @@ impl Relation {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidTuple`] if the tuple does not conform to the
-    /// relation heading.
+    /// Returns [`Error::InvalidWidth`] if the tuple arity does not match the
+    /// relation heading degree.
+    /// Returns [`Error::AttributeNotFound`] if the tuple is missing an
+    /// attribute required by the relation heading.
+    /// Returns [`Error::ScalarTypeMismatch`] if the tuple contains a value with
+    /// a different scalar type than the relation heading requires.
     pub fn insert(&mut self, tuple: Tuple) -> Result<(), Error> {
-        if !self.heading.validate_tuple(&tuple) {
-            return Err(Error::InvalidTuple);
-        }
+        self.heading.validate_tuple(&tuple)?;
         self.body.insert(tuple);
         Ok(())
     }
@@ -380,7 +393,10 @@ mod tests {
                         .unwrap(),
                 ],
             ),
-            Err(Error::InvalidTuple)
+            Err(Error::ScalarTypeMismatch {
+                lhs: ScalarType::Boolean,
+                rhs: ScalarType::Integer
+            })
         );
     }
 
