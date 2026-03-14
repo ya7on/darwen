@@ -63,6 +63,22 @@
 //!   only `INTEGER > INTEGER` is valid. All other comparisons return an error.
 //! - [`Predicate::Lt`] / [`Predicate::lt`] compares two operands with `<`;
 //!   only `INTEGER < INTEGER` is valid. All other comparisons return an error.
+//!
+//! # Divide
+//!
+//! [`Relation::divide`] implements relational division (`÷`).
+//!
+//! For relations `R(X, Y)` and `S(Y)`, the result `R ÷ S` contains all tuples
+//! over `X` for which `R` contains a matching tuple for every tuple in `S`.
+//!
+//! Example:
+//! - if `Enrollments(student, course)` contains `(Ann, Math)`, `(Ann, Rust)`,
+//!   `(Bob, Math)`, and `(Bob, Rust)`
+//! - and `Required(course)` contains `Math` and `Rust`
+//! - then `Enrollments ÷ Required` returns `Ann` and `Bob`
+//!
+//! The divisor heading must be a subset of the dividend heading; otherwise
+//! [`Relation::divide`] returns [`Error::HeadingMismatch`].
 mod error;
 mod ops;
 mod types;
