@@ -324,6 +324,36 @@ impl Relation {
         self.body.insert(tuple);
         Ok(())
     }
+
+    /// Iterates over relation tuples in key order.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use darwen::{
+    ///     heading,
+    ///     tuple,
+    ///     prelude::{RelationBuilder, ScalarType},
+    /// };
+    ///
+    /// let relation = RelationBuilder::new()
+    ///     .with_heading(heading!(id = ScalarType::Integer)?)
+    ///     .with_body(vec![
+    ///         tuple!(id = 2)?,
+    ///         tuple!(id = 1)?,
+    ///     ])
+    ///     .build()?;
+    ///
+    /// let tuples = relation.iter().cloned().collect::<Vec<_>>();
+    ///
+    /// assert_eq!(tuples.len(), 2);
+    /// assert_eq!(tuples[0], tuple!(id = 1)?);
+    /// assert_eq!(tuples[1], tuple!(id = 2)?);
+    /// # Ok::<(), darwen::prelude::Error>(())
+    /// ```
+    pub fn iter(&self) -> impl Iterator<Item = &Tuple> {
+        self.body.iter()
+    }
 }
 
 impl Display for Relation {
@@ -411,6 +441,28 @@ mod tests {
         )?;
 
         assert_eq!(relation.body.len(), 1);
+        Ok(())
+    }
+
+    #[test]
+    fn test_iter_returns_tuples_in_sorted_order() -> Result<(), Error> {
+        let relation = Relation::new_from_iter(
+            Heading::try_from(vec![(AttributeName::from("a"), ScalarType::Integer)]).unwrap(),
+            vec![
+                Tuple::try_from(vec![(AttributeName::from("a"), Scalar::Integer(2))]).unwrap(),
+                Tuple::try_from(vec![(AttributeName::from("a"), Scalar::Integer(1))]).unwrap(),
+            ],
+        )?;
+
+        let tuples = relation.iter().cloned().collect::<Vec<_>>();
+
+        assert_eq!(
+            tuples,
+            vec![
+                Tuple::try_from(vec![(AttributeName::from("a"), Scalar::Integer(1))]).unwrap(),
+                Tuple::try_from(vec![(AttributeName::from("a"), Scalar::Integer(2))]).unwrap(),
+            ]
+        );
         Ok(())
     }
 }
