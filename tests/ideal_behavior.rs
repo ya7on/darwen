@@ -48,7 +48,9 @@ fn test_heading_builder_returns_error_for_duplicate_attributes() {
             .with_attribute(AttributeName::from("id"), ScalarType::Integer)
             .with_attribute(AttributeName::from("id"), ScalarType::String)
             .build(),
-        Err(Error::InvalidAttribute)
+        Err(Error::AttributeAlreadyExists {
+            name: AttributeName::from("id"),
+        })
     );
 }
 
@@ -59,13 +61,15 @@ fn test_tuple_builder_returns_error_for_duplicate_attributes() {
             .with_value(AttributeName::from("id"), Scalar::Integer(1))
             .with_value(AttributeName::from("id"), Scalar::Integer(2))
             .build(),
-        Err(Error::InvalidTuple)
+        Err(Error::AttributeAlreadyExists {
+            name: AttributeName::from("id"),
+        })
     );
 }
 
 #[test]
 fn test_relation_builder_requires_heading() {
-    assert_eq!(RelationBuilder::new().build(), Err(Error::InvalidHeading));
+    assert_eq!(RelationBuilder::new().build(), Err(Error::HeadingMissing));
 }
 
 #[test]
@@ -75,7 +79,13 @@ fn test_relation_builder_rejects_tuples_that_do_not_match_heading() {
         .with_body(vec![tuple(vec![("id", Scalar::Boolean(true))])])
         .build();
 
-    assert_eq!(result, Err(Error::InvalidTuple));
+    assert_eq!(
+        result,
+        Err(Error::ScalarTypeMismatch {
+            lhs: ScalarType::Boolean,
+            rhs: ScalarType::Integer
+        })
+    );
 }
 
 #[test]
@@ -125,7 +135,7 @@ fn test_heading_validate_tuple_rejects_unknown_attribute_even_with_same_arity() 
     let heading = heading(vec![("id", ScalarType::Integer)]);
     let tuple = tuple(vec![("age", Scalar::Integer(20))]);
 
-    assert!(!heading.validate_tuple(&tuple));
+    assert!(heading.validate_tuple(&tuple).is_err());
 }
 
 #[test]
@@ -275,7 +285,9 @@ fn test_rename_rejects_unknown_source_attribute() {
 
     assert_eq!(
         users.rename(&[(AttributeName::from("age"), AttributeName::from("years"))]),
-        Err(Error::InvalidAttribute)
+        Err(Error::AttributeNotFound {
+            name: AttributeName::from("age")
+        })
     );
 }
 
@@ -314,7 +326,13 @@ fn test_join_rejects_shared_attributes_with_different_types() {
         ]],
     );
 
-    assert_eq!(lhs.join(&rhs), Err(Error::InvalidAttribute));
+    assert_eq!(
+        lhs.join(&rhs),
+        Err(Error::ScalarTypeMismatch {
+            lhs: ScalarType::Integer,
+            rhs: ScalarType::String,
+        })
+    );
 }
 
 #[test]

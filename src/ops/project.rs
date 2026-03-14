@@ -12,10 +12,14 @@ impl Heading {
         let mut heading_attributes = BTreeMap::new();
         for attribute in attributes {
             let Some(ty) = self.get(attribute) else {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeNotFound {
+                    name: attribute.clone(),
+                });
             };
             if !seen.insert(attribute.clone()) {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeAlreadyExists {
+                    name: attribute.clone(),
+                });
             }
             heading_attributes.insert(attribute.clone(), *ty);
         }
@@ -28,7 +32,9 @@ impl Tuple {
         let mut new_tuple = Vec::with_capacity(attributes.len());
         for attribute in attributes {
             let Some(value) = self.get(attribute) else {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeNotFound {
+                    name: attribute.clone(),
+                });
             };
             new_tuple.push((attribute.clone(), value.clone()));
         }
@@ -55,8 +61,10 @@ impl Relation {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidAttribute`] if one of the requested attributes
+    /// Returns [`Error::AttributeNotFound`] if one of the requested attributes
     /// does not exist in the relation heading.
+    /// Returns [`Error::AttributeAlreadyExists`] if the projection list repeats
+    /// the same attribute name more than once.
     ///
     /// # Example
     ///
@@ -199,7 +207,7 @@ mod tests {
 
         assert_eq!(
             relation.project(&[AttributeName::from("bar")]),
-            Err(Error::InvalidAttribute)
+            Err(Error::AttributeNotFound { name: "bar".into() })
         );
         Ok(())
     }
@@ -211,7 +219,7 @@ mod tests {
 
         assert_eq!(
             tuple.project(&[AttributeName::from("bar")]),
-            Err(Error::InvalidAttribute)
+            Err(Error::AttributeNotFound { name: "bar".into() })
         );
     }
 }

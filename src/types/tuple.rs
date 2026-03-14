@@ -108,8 +108,8 @@ impl TupleBuilder {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidTuple`] if the builder contains duplicate
-    /// attribute names.
+    /// Returns [`Error::AttributeAlreadyExists`] if the builder contains
+    /// duplicate attribute names.
     pub fn build(self) -> Result<Tuple, Error> {
         Tuple::try_from(self.values)
     }
@@ -214,7 +214,7 @@ impl Tuple {
 
 impl<K, V> TryFrom<Vec<(K, V)>> for Tuple
 where
-    K: Into<AttributeName>,
+    K: Into<AttributeName> + Clone,
     V: Into<Scalar>,
 {
     type Error = Error;
@@ -222,8 +222,13 @@ where
     fn try_from(input: Vec<(K, V)>) -> Result<Self, Self::Error> {
         let mut values = BTreeMap::new();
         for (attribute, value) in input {
-            if values.insert(attribute.into(), value.into()).is_some() {
-                return Err(Error::InvalidTuple);
+            if values
+                .insert(attribute.clone().into(), value.into())
+                .is_some()
+            {
+                return Err(Error::AttributeAlreadyExists {
+                    name: attribute.into(),
+                });
             }
         }
 

@@ -14,15 +14,15 @@ impl Heading {
         let mut rename_map = HashMap::new();
         for (old, new) in mapping {
             if !self.contains(old) {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeNotFound { name: old.clone() });
             }
             if rename_map.insert(old.clone(), new.clone()).is_some() {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeAlreadyExists { name: new.clone() });
             }
         }
         for old in rename_map.keys() {
             if !self.contains(old) {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeNotFound { name: old.clone() });
             }
         }
 
@@ -36,7 +36,7 @@ impl Heading {
                 .unwrap_or_else(|| name.clone());
 
             if !skip.insert(final_name.clone()) {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeAlreadyExists { name: final_name });
             }
 
             attributes.insert(final_name, *attribute);
@@ -58,7 +58,7 @@ impl Tuple {
             .collect::<HashSet<_>>();
         for (old, new) in mapping {
             let Some(value) = self.get(old) else {
-                return Err(Error::InvalidAttribute);
+                return Err(Error::AttributeNotFound { name: old.clone() });
             };
             tuple.push((new.clone(), value.clone()));
         }
@@ -90,9 +90,10 @@ impl Relation {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidAttribute`] if the rename mapping references an
-    /// unknown attribute, repeats the same source attribute more than once, or
-    /// produces duplicate target names.
+    /// Returns [`Error::AttributeNotFound`] if the rename mapping references an
+    /// unknown attribute.
+    /// Returns [`Error::AttributeAlreadyExists`] if the rename mapping repeats
+    /// the same source attribute or produces duplicate target names.
     ///
     /// # Example
     ///
@@ -275,7 +276,9 @@ mod tests {
                 (AttributeName::from("a"), AttributeName::from("x")),
                 (AttributeName::from("b"), AttributeName::from("x")),
             ]),
-            Err(Error::InvalidAttribute)
+            Err(Error::AttributeAlreadyExists {
+                name: AttributeName::from("x")
+            })
         );
         Ok(())
     }
@@ -297,7 +300,9 @@ mod tests {
 
         assert_eq!(
             relation.rename(&[(AttributeName::from("a"), AttributeName::from("b"))]),
-            Err(Error::InvalidAttribute)
+            Err(Error::AttributeAlreadyExists {
+                name: AttributeName::from("b")
+            })
         );
         Ok(())
     }
@@ -372,7 +377,9 @@ mod tests {
                 (AttributeName::from("a"), AttributeName::from("x")),
                 (AttributeName::from("a"), AttributeName::from("y")),
             ]),
-            Err(Error::InvalidAttribute)
+            Err(Error::AttributeAlreadyExists {
+                name: AttributeName::from("y")
+            })
         );
         Ok(())
     }
@@ -383,7 +390,9 @@ mod tests {
 
         assert_eq!(
             tuple.rename(&[(AttributeName::from("b"), AttributeName::from("c"))]),
-            Err(Error::InvalidAttribute)
+            Err(Error::AttributeNotFound {
+                name: AttributeName::from("b")
+            })
         );
     }
 }

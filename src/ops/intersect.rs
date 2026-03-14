@@ -25,7 +25,7 @@ impl Relation {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidHeading`] if the relations do not have the same
+    /// Returns [`Error::HeadingMismatch`] if the relations do not have the same
     /// heading.
     ///
     /// # Example
@@ -61,7 +61,7 @@ impl Relation {
     /// ```
     pub fn intersect(&self, other: &Relation) -> Result<Relation, Error> {
         if self.heading != other.heading {
-            return Err(Error::InvalidHeading);
+            return Err(Error::HeadingMismatch);
         }
         let mut relation = Relation::new(self.heading.clone());
         for tuple in &self.body {
@@ -129,7 +129,7 @@ mod tests {
             vec![Tuple::try_from(vec![(AttributeName::from("bar"), Scalar::Integer(1))]).unwrap()],
         )?;
 
-        assert_eq!(lhs.intersect(&rhs), Err(Error::InvalidHeading));
+        assert_eq!(lhs.intersect(&rhs), Err(Error::HeadingMismatch));
         Ok(())
     }
 
