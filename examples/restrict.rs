@@ -1,7 +1,7 @@
 //! Demonstrates how to filter a relation with the `RESTRICT` operation.
 
 use darwen::prelude::{Predicate, Relation, RelationBuilder, Scalar, ScalarType};
-use darwen::{heading, tuple, AttributeName};
+use darwen::{heading, tuple, AttributeName, Expression};
 
 fn users() -> Relation {
     RelationBuilder::new()
@@ -25,7 +25,10 @@ fn main() {
     println!(
         "{}",
         users
-            .restrict(&Predicate::gt(AttributeName::from("age"), Scalar::from(20)))
+            .restrict(&Predicate::gt(
+                Expression::Attribute(AttributeName::from("age")),
+                Expression::Const(Scalar::Integer(20))
+            ))
             .unwrap()
     )
 }

@@ -134,6 +134,25 @@ pub struct Tuple {
 }
 
 impl Tuple {
+    /// Returns an empty tuple.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use darwen::Tuple;
+    ///
+    /// let tuple = Tuple::empty();
+    ///
+    /// assert_eq!(tuple.arity(), 0);
+    /// # Ok::<(), darwen::prelude::Error>(())
+    /// ```
+    #[must_use]
+    pub fn empty() -> Self {
+        Self {
+            values: BTreeMap::new(),
+        }
+    }
+
     /// Returns the number of attributes stored in the tuple.
     ///
     /// # Example
@@ -193,13 +212,17 @@ impl Tuple {
     }
 }
 
-impl TryFrom<Vec<(AttributeName, Scalar)>> for Tuple {
+impl<K, V> TryFrom<Vec<(K, V)>> for Tuple
+where
+    K: Into<AttributeName>,
+    V: Into<Scalar>,
+{
     type Error = Error;
 
-    fn try_from(input: Vec<(AttributeName, Scalar)>) -> Result<Self, Self::Error> {
+    fn try_from(input: Vec<(K, V)>) -> Result<Self, Self::Error> {
         let mut values = BTreeMap::new();
         for (attribute, value) in input {
-            if values.insert(attribute, value).is_some() {
+            if values.insert(attribute.into(), value.into()).is_some() {
                 return Err(Error::InvalidTuple);
             }
         }

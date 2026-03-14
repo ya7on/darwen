@@ -113,6 +113,16 @@ impl Predicate {
     /// assert!(predicate.eval(&tuple)?);
     /// # Ok::<(), darwen::prelude::Error>(())
     /// ```
+    ///
+    /// Passing an owned `String` directly is intentionally rejected to avoid
+    /// ambiguity between attribute names and string constants.
+    ///
+    /// ```compile_fail
+    /// use darwen::prelude::{AttributeName, Predicate};
+    ///
+    /// let city_name = String::from("Berlin");
+    /// let _predicate = Predicate::eq(AttributeName::from("city"), city_name);
+    /// ```
     pub fn eq<L, R>(lhs: L, rhs: R) -> Self
     where
         L: Into<Expression>,
@@ -242,6 +252,26 @@ mod tests {
     }
 
     #[test]
+    fn test_expression_from_attribute_name() {
+        let expression = Expression::from(AttributeName::from("age"));
+
+        match expression {
+            Expression::Attribute(attribute) => assert_eq!(attribute, AttributeName::from("age")),
+            Expression::Const(_) => panic!("expected attribute expression"),
+        }
+    }
+
+    #[test]
+    fn test_expression_from_scalar() {
+        let expression = Expression::from(Scalar::Integer(42));
+
+        match expression {
+            Expression::Const(value) => assert_eq!(value, Scalar::Integer(42)),
+            Expression::Attribute(_) => panic!("expected const expression"),
+        }
+    }
+
+    #[test]
     fn test_and() {
         let tuple = integer_tuple("foo", 42);
         let predicate = Predicate::And(
@@ -258,6 +288,19 @@ mod tests {
     }
 
     #[test]
+    fn test_predicate_eq_helper() {
+        let predicate = Predicate::eq(AttributeName::from("age"), Scalar::Integer(42));
+
+        match predicate {
+            Predicate::Eq(Expression::Attribute(attribute), Expression::Const(value)) => {
+                assert_eq!(attribute, AttributeName::from("age"));
+                assert_eq!(value, Scalar::Integer(42));
+            }
+            _ => panic!("expected eq predicate"),
+        }
+    }
+
+    #[test]
     fn test_eq() {
         let tuple = integer_tuple("foo", 42);
         let predicate = Predicate::Eq(
@@ -265,6 +308,19 @@ mod tests {
             Expression::Const(Scalar::Integer(42)),
         );
         assert!(predicate.eval(&tuple).unwrap());
+    }
+
+    #[test]
+    fn test_predicate_gt_helper() {
+        let predicate = Predicate::gt(AttributeName::from("age"), Scalar::Integer(18));
+
+        match predicate {
+            Predicate::Gt(Expression::Attribute(attribute), Expression::Const(value)) => {
+                assert_eq!(attribute, AttributeName::from("age"));
+                assert_eq!(value, Scalar::Integer(18));
+            }
+            _ => panic!("expected gt predicate"),
+        }
     }
 
     #[test]
@@ -276,6 +332,19 @@ mod tests {
         )));
 
         assert!(!predicate.eval(&tuple).unwrap());
+    }
+
+    #[test]
+    fn test_predicate_lt_helper() {
+        let predicate = Predicate::lt(AttributeName::from("age"), Scalar::Integer(30));
+
+        match predicate {
+            Predicate::Lt(Expression::Attribute(attribute), Expression::Const(value)) => {
+                assert_eq!(attribute, AttributeName::from("age"));
+                assert_eq!(value, Scalar::Integer(30));
+            }
+            _ => panic!("expected lt predicate"),
+        }
     }
 
     #[test]
@@ -297,7 +366,7 @@ mod tests {
 
     #[test]
     fn test_expression_const_returns_value() -> Result<(), Error> {
-        let tuple = Tuple::try_from(vec![]).unwrap();
+        let tuple = Tuple::empty();
 
         assert_eq!(
             Expression::Const(Scalar::Boolean(true)).eval(&tuple)?,
@@ -308,7 +377,7 @@ mod tests {
 
     #[test]
     fn test_expression_attribute_missing_is_error() {
-        let tuple = Tuple::try_from(vec![]).unwrap();
+        let tuple = Tuple::empty();
 
         assert_eq!(
             Expression::Attribute(AttributeName::from("missing")).eval(&tuple),
